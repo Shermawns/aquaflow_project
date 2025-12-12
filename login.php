@@ -9,22 +9,51 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
+
+<?php 
+    session_start();
+
+    require_once "config/banco.php";
+    require_once "config/function.php";
+
+    $user = $_POST['usuario'] ?? null;
+    $pass = $_POST['senha'] ?? null;
+
+
+    if(!is_null($user) && !is_null($pass)){
+        $val = "SELECT usuario FROM tabela_usuarios WHERE usuario='$user' ";
+        $busca = $banco->query($val);
+
+        if($busca->num_rows > 0){
+            $reg = $busca->fetch_object();
+            if(testarHash($pass, $reg->senha)){
+                $_SESSION['usuario'] = $reg->usuario;
+                $_SESSION['senha'] = $reg->senha;
+            }else{
+                echo "Senha incorreta.";
+            }
+        }else{
+            echo "Usuário não cadastrado.";
+        }
+    }
+?>
+
 <body>
     <div class="d-flex align-items-center justify-content-center min-vh-100">
         <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 400px; width: 100%;">
             <div class="card-body">
                 <div class="text-center mb-4">
-                    <h1 class="h3 fw-bold text-primary #4facfe">AquaFlow</h1>
-                    <h2 class="h6 text-secondary">Acesse sua conta</h2>
+                    <img src="imgs/Gemini_Generated_Image_3y2rqt3y2rqt3y2r.png" alt="Logo AquaFlow" class="img-fluid mb-2" style="max-width: 300px;">
+                    <h2 class="h5 text-primary">Acesse sua conta</h2>
                 </div>
 
-                <form action="index.php" method="post">
+                <form method="post">
                     <div class="mb-3">
                         <label for="user" class="form-label">Usuário</label>
                         <input type="text" class="form-control" id="user" name="usuario" autocomplete="username" required placeholder="Digite seu usuário">
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-5">
                         <label for="pass" class="form-label">Senha</label>
                         <input type="password" class="form-control" id="pass" name="senha" autocomplete="current-password" required placeholder="Digite sua senha">
                     </div>
