@@ -10,27 +10,29 @@
 </head>
 
 <body>
-    <div class="container d-flex align-items-center justify-content-center min-vh-100">
+    <div class="d-flex align-items-center justify-content-center min-vh-100">
         <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 400px; width: 100%;">
             <div class="card-body">
                 <div class="text-center mb-4">
                     <h1 class="h3 fw-bold text-primary #4facfe">AquaFlow</h1>
                     <h2 class="h6 text-secondary">Acesse sua conta</h2>
                 </div>
+
                 <form action="index.php" method="post">
-                    <div class="input">
-                        <label for="user">Usuário:</label>
-                        <input type="text" id="user" name="usuario" autocomplete="username" required>
+                    <div class="mb-3">
+                        <label for="user" class="form-label">Usuário</label>
+                        <input type="text" class="form-control" id="user" name="usuario" autocomplete="username" required placeholder="Digite seu usuário">
                     </div>
 
-                    <div class="input">
-                        <label for="pass">Senha:</label>
-                        <input type="password" id="pass" name="senha" autocomplete="current-password" required>
+                    <div class="mb-3">
+                        <label for="pass" class="form-label">Senha</label>
+                        <input type="password" class="form-control" id="pass" name="senha" autocomplete="current-password" required placeholder="Digite sua senha">
                     </div>
 
-                    <input type="submit" value="Entrar">
+                    <div class="d-grid">
+                        <input type="submit" class="btn btn-primary btn-lg" value="Entrar">
+                    </div>
                 </form>
-                    <a href="cadastro.php" class="text-decoration-none">Não tem conta? Cadastre-se</a>
             </div>
         </div>
     </div>
