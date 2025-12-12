@@ -21,19 +21,19 @@
 
 
     if(!is_null($user) && !is_null($pass)){
-        $val = "SELECT usuario FROM tabela_usuarios WHERE usuario='$user' ";
+        $val = "SELECT usuario, senha FROM tabela_usuarios WHERE usuario='$user' ";
         $busca = $banco->query($val);
 
         if($busca->num_rows > 0){
             $reg = $busca->fetch_object();
             if(testarHash($pass, $reg->senha)){
                 $_SESSION['usuario'] = $reg->usuario;
-                $_SESSION['senha'] = $reg->senha;
+                $_SESSION['senha'] = $reg->senha;   
             }else{
-                echo "Senha incorreta.";
+                echo "<div class='alert alert-danger' id='msgErro'><strong>Senha incorreta!</strong></div>";
             }
         }else{
-            echo "Usuário não cadastrado.";
+            echo "<div class='alert alert-warning' id='msgErro'><strong>Usuario não cadastrado!</strong></div>";
         }
     }
 ?>
@@ -66,5 +66,17 @@
         </div>
     </div>
 </body>
-
 </html>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var alerta = document.getElementById('msgErro');
+    
+        if (alerta) {
+            setTimeout(function() {
+                alerta.style.transition = "opacity 0.5s ease";
+                alerta.style.opacity = "0";
+                setTimeout(function() { alerta.remove(); }, 500); 
+            }, 3000);
+        }
+    });
+</script>

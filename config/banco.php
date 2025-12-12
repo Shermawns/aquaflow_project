@@ -1,5 +1,4 @@
 <?php
-
     $host = 'localhost';
     $user = 'root';
     $db   = 'aquaflow_db';
