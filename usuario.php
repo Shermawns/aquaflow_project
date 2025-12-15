@@ -30,9 +30,69 @@
                 <p class="text-muted mb-0">Gerencie o acesso ao sistema</p>
             </div>
             <button type="button" class="btn btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCadastrar">
-                <i class="fa-solid fa-plus me-2"></i>Novo Usuário
+                <i class="fa-solid fa-plus me-2"></i>Cadastrar Usuário
             </button>
+
+            <!-- Modal de cadastro de usuarios -->
+
+            <div class="modal fade" id="modalCadastrar" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content rounded-4 border-0 shadow">
+                        <div class="modal-header border-bottom-0">
+                            <h5 class="modal-title fw-bold">Cadastrar Usuário</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <!-- Campo de usuário -->
+
+                        <div class="modal-body py-4 px-4">
+                            <form method="post">
+                                <div class="mb-3 text-start">
+                                    <label for="user" class="form-label text-muted small fw-bold">USUÁRIO</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 text-primary">
+                                            <i class="fa-solid fa-user"></i>
+                                        </span>
+                                        <input type="text" class="form-control bg-light border-start-0 ps-0" id="user" name="usuario" autocomplete="username" required placeholder="Digite o login">
+                                    </div>
+                                </div>
+
+                                <!-- Campo de senha -->
+
+                                <div class="mb-3 text-start">
+                                    <label for="pass" class="form-label text-muted small fw-bold">SENHA</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 text-primary">
+                                            <i class="fa-solid fa-lock"></i>
+                                        </span>
+                                        <input type="password" class="form-control bg-light border-start-0 ps-0" id="pass" name="senha" autocomplete="new-password" required placeholder="Crie uma senha forte">
+                                    </div>
+                                </div>
+
+                                <!-- Campo de confirmar senha -->
+
+                                <div class="mb-4 text-start">
+                                    <label for="confirm" class="form-label text-muted small fw-bold">CONFIRMAR SENHA</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0 text-primary">
+                                            <i class="fa-solid fa-check-double"></i>
+                                        </span>
+                                        <input type="password" class="form-control bg-light border-start-0 ps-0" id="confirm" name="confirmar" autocomplete="new-password" required placeholder="Repita a senha">
+                                    </div>
+                                </div>
+
+                                <!-- Botão de cadastrar -->
+
+                                <div class="modal-footer border-top-0 justify-content-center">
+                                    <button type="button" class="btn btn-primary btn-lg">Cadastrar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
         <div class="card border-0 rounded-4 overflow-hidden">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -48,7 +108,7 @@
                             $busca = $banco->query($q);
 
                             if($busca->num_rows > 0){
-                                echo '<tbody>'; 
+                                echo '<tbody>';
                                 while($reg = $busca->fetch_object()){
                                     echo '<tr>
                                             <td class="ps-4">
@@ -82,6 +142,8 @@
             </div>
         </div>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
