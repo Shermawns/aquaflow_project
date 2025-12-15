@@ -29,6 +29,9 @@
             <div class="collapse navbar-collapse" id="conteudoNavbar">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
+                        <a class="nav-link" href="#">Usuários</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#">Funcionários</a>
                     </li>
                     <li class="nav-item">
@@ -49,13 +52,48 @@
     </nav>
     <div class="container py-5">
         <section class="mb-5 text-center">
-            <h2 class="fw-bold mb-3" style="color: #005c97;">Uma Transformação Digital</h2>
+            <h2 class="fw-bold mb-3" style="color: #005c97;">Soluções Completas em Saneamento</h2>
             <p class="lead text-muted mx-auto mb-5" style="max-width: 800px;">
-                Há mais de 12 anos no mercado, ajudamos no aumento da produtividade das equipes, no controle de materiais, na redução de custos operacionais, a partir de um acompanhamento e análise de informações coletadas.
-            </p>
+                Nosso compromisso é garantir segurança hídrica, eficiência operacional e inovação em todas as etapas do processo. Trabalhamos com tecnologias modernas, equipamentos certificados e equipes altamente qualificadas.</p>
+            <div class="row g-5 mt-4">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 hover-card p-3">
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <i class="fa-solid fa-droplet fa-4x" style="color: #4facfe;"></i>
+                            </div>
+                            <h5 class="card-title fw-bold" style="color: #005c97;">Abastecimento</h5>
+                            <p class="card-text text-muted mt-3">Garantimos o fornecimento contínuo e seguro de água, desde a captação até a distribuição final, utilizando tecnologias eficientes que reduzem perdas e asseguram a qualidade do abastecimento para comunidades, indústrias e empreendimentos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 hover-card p-3">
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <i class="fa-solid fa-chart-line fa-4x" style="color: #4facfe;"></i>
+                            </div>
+                            <h5 class="card-title fw-bold" style="color: #005c97;">Monitoramento</h5>
+                            <p class="card-text text-muted mt-3">Utilizamos sistemas inteligentes e monitoramento em tempo real para acompanhar redes, reservatórios e indicadores operacionais, permitindo decisões rápidas, prevenção de falhas e otimização dos recursos hídricos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 hover-card p-3">
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <i class="fa-solid fa-microscope fa-4x" style="color: #4facfe;"></i>
+                            </div>
+                            <h5 class="card-title fw-bold" style="color: #005c97;">Tratamento</h5>
+                            <p class="card-text text-muted mt-3">Aplicamos processos avançados de tratamento e purificação da água, seguindo rigorosamente as normas ambientais e sanitárias, assegurando um recurso limpo, potável e confiável para todos os usos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
