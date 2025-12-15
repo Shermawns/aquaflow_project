@@ -12,11 +12,11 @@
 
 <body>
     <?php
-        session_start();
-        if (!isset($_SESSION['usuario'])) {
-            header("location: login.php");
-            exit;
-        }
+    session_start();
+    if (!isset($_SESSION['usuario'])) {
+        header("location: login.php");
+        exit;
+    }
     ?>
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top" id="menu-principal">
         <div class="container">
@@ -47,6 +47,14 @@
             </div>
         </div>
     </nav>
+    <div class="container py-5">
+        <section class="mb-5 text-center">
+            <h2 class="fw-bold mb-3" style="color: #005c97;">Uma Transformação Digital</h2>
+            <p class="lead text-muted mx-auto mb-5" style="max-width: 800px;">
+                Há mais de 12 anos no mercado, ajudamos no aumento da produtividade das equipes, no controle de materiais, na redução de custos operacionais, a partir de um acompanhamento e análise de informações coletadas.
+            </p>
+        </section>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
