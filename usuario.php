@@ -33,6 +33,33 @@
                 <i class="fa-solid fa-plus me-2"></i>Cadastrar Usuário
             </button>
 
+
+            <?php 
+                if (isset($_POST['usuario'])){
+                    
+                    $user = $_POST['usuario'];
+                    $pass = $_POST['senha'];
+                    $confpass = $_POST['confirmar'];
+
+                    $q = "SELECT usuario FROM tabela_usuarios WHERE usuario = '$user'";
+
+                    $busca = $banco->query($q);
+
+                    if($busca->num_rows > 0){
+                        echo "<div class='alert alert-warning' id='msgErro'><strong>Usuario já cadastrado!</strong></div>";
+                    }else{
+                        if($pass == $confpass){
+                            $hash = gerarHash($pass);
+                        
+                            $banco->query("INSERT INTO tabela_usuarios (usuario, senha) VALUES ('$user', '$hash')");
+
+                        }else{
+                            echo "<div class='alert alert-warning' id='msgErro'><strong>As senhas não se conferem!</strong></div>";
+                        }
+                    }
+                }
+            ?>
+
             <!-- Modal de cadastro de usuarios -->
 
             <div class="modal fade" id="modalCadastrar" tabindex="-1" aria-hidden="true">
@@ -84,7 +111,7 @@
                                 <!-- Botão de cadastrar -->
 
                                 <div class="modal-footer border-top-0 justify-content-center">
-                                    <button type="button" class="btn btn-primary btn-lg">Cadastrar</button>
+                                    <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Cadastrar</button>
                                 </div>
                             </form>
                         </div>
@@ -147,3 +174,19 @@
 </body>
 
 </html>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var alerta = document.getElementById('msgErro');
+    
+        if (alerta) {
+            setTimeout(function() {
+                alerta.style.transition = "opacity 0.5s ease";
+                alerta.style.opacity = "0";
+                setTimeout(function(){
+                    alerta.remove();
+                }, 500); 
+            }, 3000);
+        }   
+    });
+</script>
