@@ -8,12 +8,16 @@
 }
 
 body {
-    background: linear-gradient(135deg, #1a93f7be 0%, #71a8d8 100%);
+    background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
     min-height: 100vh;
 }
 
 .btn-primary {
-    background-color: #4facfe;
-    border: #4facfe;
+    background-color: #89c4f4;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #7ab3e3;
+    border: none;
 }
 
