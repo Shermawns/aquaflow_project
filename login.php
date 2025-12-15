@@ -28,7 +28,6 @@
             $reg = $busca->fetch_object();
             if(testarHash($pass, $reg->senha)){
                 $_SESSION['usuario'] = $reg->usuario;
-                $_SESSION['senha'] = $reg->senha;
                 echo "<div class='alert alert-success' id='msgErro'><strong>Login realizado com sucesso!</strong></div>";
                 header('location: main.php');   
             }else{
@@ -77,8 +76,10 @@
             setTimeout(function() {
                 alerta.style.transition = "opacity 0.5s ease";
                 alerta.style.opacity = "0";
-                setTimeout(function() { alerta.remove(); }, 500); 
+                setTimeout(function(){
+                    alerta.remove();
+                }, 500); 
             }, 3000);
-        }
+        }   
     });
 </script>

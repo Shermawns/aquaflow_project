@@ -18,38 +18,15 @@
         exit;
     }
     ?>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top" id="menu-principal">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="main.php">
-                <img src="imgs/Gemini_Generated_Image_3y2rqt3y2rqt3y2r.png" width="160" height="100" class="d-inline-block align-text-top me-2">
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#conteudoNavbar" aria-controls="conteudoNavbar" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="conteudoNavbar">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Usuários</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Funcionários</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Produtos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Metas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Vendas</a>
-                    </li>
-                </ul>
-                <div class="d-flex">
-                    <a href="logout.php" class="btn btn-outline-danger shadow-sm pt-2 pb-2 ps-3 pe-3 fw-bold rounded-pill">Sair <i class="fa-solid fa-right-from-bracket ms-2"></i></a>
-                </div>
-            </div>
-        </div>
-    </nav>
+
+    <!-- navbar !-->
+
+    <?php
+        require "header.php";
+    ?>
+
+    <!-- Cards !-->
+
     <div class="container py-5">
         <section class="mb-5 text-center">
             <h2 class="fw-bold mb-3" style="color: #005c97;">Soluções Completas em Saneamento</h2>
@@ -93,7 +70,6 @@
                 </div>
             </div>
         </section>
-
 
         <section class="position-relative mt-5 pt-5 pb-5 text-center bg-white rounded-5 shadow-sm" style="overflow: hidden;">
             <div class="container position-relative z-1 py-5">
