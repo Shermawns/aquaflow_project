@@ -28,7 +28,9 @@
             $reg = $busca->fetch_object();
             if(testarHash($pass, $reg->senha)){
                 $_SESSION['usuario'] = $reg->usuario;
-                $_SESSION['senha'] = $reg->senha;   
+                $_SESSION['senha'] = $reg->senha;
+                echo "<div class='alert alert-success' id='msgErro'><strong>Login realizado com sucesso!</strong></div>";
+                header('location: main.php');   
             }else{
                 echo "<div class='alert alert-danger' id='msgErro'><strong>Senha incorreta!</strong></div>";
             }
