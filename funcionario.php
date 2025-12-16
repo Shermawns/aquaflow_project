@@ -237,11 +237,26 @@
                     </div>
                     <div class="modal-footer border-top-0 justify-content-center gap-3">
                         <button type="button" class="btn btn-secondary btn-lg px-5 rounded-pill shadow-sm" data-bs-dismiss="modal">Não</button>
-                        <button type="submit"class="btn btn-danger btn-lg px-5 rounded-pill shadow-sm" name="desligar-funcionario">Sim</button>
+                        <form method="post">
+                            <input type="hidden" name="id_desligamento" id="id_desligamento">
+                            <button type="submit" class="btn btn-danger btn-lg px-5 rounded-pill shadow-sm" name="desligar-funcionario">Sim</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
+
+
+        <?php 
+            if(isset($_POST['desligar-funcionario'])){
+                $id = $_POST['id_desligamento'];
+                $q = "UPDATE tabela_funcionarios SET data_demissao = NOW() WHERE id = '$id'";
+
+                $banco->query($q);
+
+                echo "<meta http-equiv='refresh' content='0'>";
+            }
+        ?>
 
 
 
@@ -344,6 +359,7 @@
         var nome = botao.getAttribute('data-nome');
 
         document.getElementById('conf').value = nome;
+        document.getElementById('id_desligamento').value = id;
     }
 
     //funcao para padronizar cpf
