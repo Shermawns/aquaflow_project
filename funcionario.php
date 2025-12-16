@@ -13,15 +13,15 @@
 <body>
     <?php
 
-    session_start();
-    if (!isset($_SESSION['usuario'])) {
-        header("location: login.php");
-        exit;
-    }
+        session_start();
+        if (!isset($_SESSION['usuario'])) {
+            header("location: login.php");
+            exit;
+        }
 
-    require_once "config/banco.php";
-    require_once "config/function.php";
-    require "header.php";
+        require_once "config/banco.php";
+        require_once "config/function.php";
+        require "header.php";
     ?>
 
 
@@ -265,7 +265,7 @@
                                     <span class="input-group-text bg-light border-end-0 text-primary">
                                         <i class="fa-regular fa-file"></i>
                                     </span>
-                                    <input type="text" oninput="mascara(this)" class="form-control bg-light border-start-0 ps-0" id="cpf" name="cpf" maxlength="11" required placeholder="Digite o CPF">
+                                    <input type="text" oninput="mascara(this)" class="form-control bg-light border-start-0 ps-0" id="cpf" name="cpf" minlength="11" required placeholder="Digite o CPF">
                                 </div>
                             </div>
 
@@ -278,7 +278,7 @@
                                     <span class="input-group-text bg-light border-end-0 text-primary">
                                         <i class="fa-solid fa-user"></i>
                                     </span>
-                                    <input type="text" class="form-control bg-light border-start-0 ps-0" id="name" name="nome" required placeholder="Digite seu nome completo">
+                                    <input type="text" class="form-control bg-light border-start-0 ps-0" id="name" name="nome" maxlength="100" placeholder="Digite seu nome completo">
                                 </div>
                             </div>
 

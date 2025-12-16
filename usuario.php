@@ -222,7 +222,7 @@
 
                             <div class="mb-3 text-start">
                                 <label class="form-label text-muted small fw-bold">USUÁRIO</label>
-                                <input type="text" class="form-control bg-light" id="usuario_edit" name="usuario_edit" required>
+                                <input type="text" class="form-control bg-light" id="usuario_edit" name="usuario_edit" maxlength="50" required>
                             </div>
 
                             <div class="mb-3 text-start">

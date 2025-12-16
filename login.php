@@ -51,7 +51,7 @@
                 <form method="post">
                     <div class="mb-3">
                         <label for="user" class="form-label">Usuário</label>
-                        <input type="text" class="form-control" id="user" name="usuario" autocomplete="username" required placeholder="Digite seu usuário">
+                        <input type="text" class="form-control" id="user" name="usuario" autocomplete="username" maxlength="50" placeholder="Digite seu usuário">
                     </div>
 
                     <div class="mb-5">
