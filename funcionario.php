@@ -10,6 +10,21 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
+
+<!-- FALTA IMPLEMENTAR       
+ 
+
+
+   - MOSTRAR VENDAS E METAS NA VISUALIZAÇÃO DO FUNCIONARIO                 
+   
+   
+   
+   
+   -->
+
+
+
+
 <body>
 
 
@@ -23,7 +38,7 @@
         require_once "config/banco.php";
         require_once "config/function.php";
         require "header.php";
-    ?>
+        ?>
 
 
 
@@ -52,7 +67,7 @@
 
 
 
-        <!-- Lógica de cadastrar funcionario --> 
+        <!-- Lógica de cadastrar funcionario -->
 
 
         <?php
@@ -82,7 +97,7 @@
 
 
 
-        <!-- Lógica de editar funcionario --> 
+        <!-- Lógica de editar funcionario -->
 
 
         <?php
@@ -109,12 +124,12 @@
 
 
         <?php
-            if (isset($_POST['desligar-funcionario'])) {
-                $id = $_POST['id_desligamento'];
-                $q = "UPDATE tabela_funcionarios SET data_demissao = NOW() WHERE id = '$id'";
-                $banco->query($q);
-                echo "<meta http-equiv='refresh' content='0'>";
-            }
+        if (isset($_POST['desligar-funcionario'])) {
+            $id = $_POST['id_desligamento'];
+            $q = "UPDATE tabela_funcionarios SET data_demissao = NOW() WHERE id = '$id'";
+            $banco->query($q);
+            echo "<meta http-equiv='refresh' content='0'>";
+        }
         ?>
 
 
@@ -127,13 +142,13 @@
         <!--Lógica de ativação -->
 
 
-        <?php 
-            if(isset($_POST['ativar-funcionario'])){
-                $id = $_POST['id_ativar'];
-                $q = "UPDATE tabela_funcionarios SET data_demissao = NULL WHERE id = '$id'";
-                $banco->query($q);
-                echo "<meta http-equiv='refresh' content='0'>";
-            }
+        <?php
+        if (isset($_POST['ativar-funcionario'])) {
+            $id = $_POST['id_ativar'];
+            $q = "UPDATE tabela_funcionarios SET data_demissao = NULL WHERE id = '$id'";
+            $banco->query($q);
+            echo "<meta http-equiv='refresh' content='0'>";
+        }
         ?>
 
 
@@ -145,7 +160,7 @@
 
 
 
-        
+
         <!-- Tabela de listagem -->
 
 
@@ -154,7 +169,7 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0 align-middle">
-                        
+
 
 
                         <thead class="bg-light border-bottom">
@@ -396,7 +411,7 @@
 
 
 
-    
+
 
 
 
@@ -460,11 +475,6 @@
 </html>
 
 <script>
-
-
-
-
-
     document.addEventListener("DOMContentLoaded", function() {
         var alerta = document.getElementById('msgErro');
 
@@ -500,7 +510,7 @@
 
 
 
-    
+
 
     // Função para preencher o modal de visualização
     function carregarDadosVisualizacao(botao) {
@@ -536,7 +546,7 @@
 
 
     // Função para confirmar ativacao do funcionario
-    function confirmarAtivacao(botao){
+    function confirmarAtivacao(botao) {
         var id = botao.getAttribute('data-id');
         var nome = botao.getAttribute('data-nome');
 
