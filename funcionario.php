@@ -22,8 +22,6 @@
     require_once "config/banco.php";
     require_once "config/function.php";
     require "header.php";
-
-
     ?>
 
 
@@ -37,8 +35,6 @@
                 <i class="fa-solid fa-plus me-2"></i>Cadastrar funcionário
             </button>
         </div>
-
-
 
 
         <!-- Lógica de registro-->
@@ -61,8 +57,6 @@
             }
         }
         ?>
-
-
 
         <!-- Lógica de editar funcionário -->
 
@@ -116,6 +110,17 @@
                                         <td class="pe-4 text-end">
                                             
                                             <input type="button" 
+                                                class="btn btn-sm btn-outline-info rounded-pill me-1" 
+                                                value="Visualizar" 
+                                                title="Visualizar" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#modalVisualizar"
+                                                data-nome="' . $reg->nome . '"
+                                                data-cpf="' . $reg->cpf . '"
+                                                data-contratacao="' . date('d/m/Y', strtotime($reg->data_contratacao)) . '"
+                                                onclick="carregarDadosVisualizacao(this)">
+
+                                            <input type="button" 
                                                 class="btn btn-sm btn-outline-primary rounded-pill me-1" 
                                                 value="Editar" 
                                                 title="Editar" 
@@ -124,6 +129,16 @@
                                                 data-id="' . $reg->id . '"
                                                 data-nome="' . $reg->nome . '"
                                                 onclick="carregarDadosEdicao(this)">
+
+                                            <input type="button" 
+                                                class="btn btn-sm btn-outline-danger rounded-pill me-1" 
+                                                value="Desligar" 
+                                                title="Desligar" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#modalDesligar_func"
+                                                data-id="' . $reg->id . '"
+                                                data-nome="' . $reg->nome . '"
+                                                onclick="confirmarDesligamento(this)">
 
                                         </td>
                                     </tr>';
@@ -135,6 +150,34 @@
                         ?>
 
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Modal de visualizar funcionário -->
+
+        <div class="modal fade" id="modalVisualizar" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header border-bottom-0">
+                        <h5 class="modal-title fw-bold">Detalhes do Funcionário</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body py-4 px-4">
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-bold">NOME COMPLETO</label>
+                            <input type="text" class="form-control bg-light" id="visualizar_nome" readonly>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-bold">CPF</label>
+                            <input type="text" class="form-control bg-light" id="visualizar_cpf" readonly>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-bold">DATA DE CONTRATAÇÃO</label>
+                            <input type="text" class="form-control bg-light" id="visualizar_contratacao" readonly>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -155,14 +198,14 @@
                             <input type="hidden" name="id_edit" id="id_edit">
 
                             <!-- Campo de nome completo -->
-                            
+
                             <div class="mb-3 text-start">
                                 <label class="form-label text-muted small fw-bold">NOME COMPLETO</label>
                                 <input type="text" class="form-control bg-light" id="funcionario_edit" name="nome_edit" required>
                             </div>
 
                             <!-- Botão de salvar alterações -->
-                            
+
                             <div class="modal-footer border-top-0 justify-content-center">
                                 <button type="submit" name="editar_funcionario" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Salvar Alterações</button>
                             </div>
@@ -174,6 +217,32 @@
                 </div>
             </div>
         </div>
+
+                <!-- Modal de desligar funcionário -->
+
+        <div class="modal fade" id="modalDesligar_func" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+
+                    <div class="modal-header border-bottom-0 justify-content-center position-relative">
+                        <h5 class="modal-title fw-bold text-danger fs-4">DESLIGAMENTO</h5>
+                        <button type="button"class="btn-close position-absolute end-0 me-3"data-bs-dismiss="modal"aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body py-4 px-4">
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-bold">Você tem certeza que quer desligar o funcionário abaixo?</label>
+                            <input type="text" class="form-control bg-light" id="conf"readonly>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0 justify-content-center gap-3">
+                        <button type="button" class="btn btn-secondary btn-lg px-5 rounded-pill shadow-sm" data-bs-dismiss="modal">Não</button>
+                        <button type="submit"class="btn btn-danger btn-lg px-5 rounded-pill shadow-sm" name="desligar-funcionario">Sim</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
 
         <!-- Modal de cadastro de funcionários  -->
@@ -232,7 +301,6 @@
 </html>
 
 <script>
-    
     document.addEventListener("DOMContentLoaded", function() {
         var alerta = document.getElementById('msgErro');
 
@@ -255,6 +323,27 @@
 
         document.getElementById('id_edit').value = id;
         document.getElementById('funcionario_edit').value = funcionario;
+    }
+
+    // Função para preencher o modal de visualização
+    
+    function carregarDadosVisualizacao(botao) {
+        var nome = botao.getAttribute('data-nome');
+        var cpf = botao.getAttribute('data-cpf');
+        var contratacao = botao.getAttribute('data-contratacao');
+
+        document.getElementById('visualizar_nome').value = nome;
+        document.getElementById('visualizar_cpf').value = cpf;
+        document.getElementById('visualizar_contratacao').value = contratacao;
+    }
+
+        // Função para confirmar desligamento do funcionario
+    
+    function confirmarDesligamento(botao) {
+        var id = botao.getAttribute('data-id');
+        var nome = botao.getAttribute('data-nome');
+
+        document.getElementById('conf').value = nome;
     }
 
     //funcao para padronizar cpf
