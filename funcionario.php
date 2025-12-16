@@ -11,8 +11,9 @@
 </head>
 
 <body>
-    <?php
 
+
+    <?php
         session_start();
         if (!isset($_SESSION['usuario'])) {
             header("location: login.php");
@@ -23,6 +24,12 @@
         require_once "config/function.php";
         require "header.php";
     ?>
+
+
+
+
+
+
 
 
     <div class="container py-5">
@@ -37,16 +44,23 @@
         </div>
 
 
-        <!-- Lógica de registro-->
+
+
+
+
+
+
+
+
+        <!-- Lógica de cadastrar funcionario --> 
+
 
         <?php
         if (isset($_POST['cpf'])) {
-
             $cpf = $_POST['cpf'];
             $nome = $_POST['nome'];
 
             $q = "SELECT cpf FROM tabela_funcionarios WHERE cpf = '$cpf'";
-
             $busca = $banco->query($q);
 
             if ($busca->num_rows > 0) {
@@ -58,7 +72,18 @@
         }
         ?>
 
-        <!-- Lógica de editar funcionário -->
+
+
+
+
+
+
+
+
+
+
+        <!-- Lógica de editar funcionario --> 
+
 
         <?php
         if (isset($_POST['editar_funcionario'])) {
@@ -70,12 +95,68 @@
         }
         ?>
 
-        <!-- Caixa onde fica os funcionarios listados-->
+
+
+
+
+
+
+
+
+
+
+        <!--Lógica de desligamento -->
+
+
+        <?php
+            if (isset($_POST['desligar-funcionario'])) {
+                $id = $_POST['id_desligamento'];
+                $q = "UPDATE tabela_funcionarios SET data_demissao = NOW() WHERE id = '$id'";
+                $banco->query($q);
+                echo "<meta http-equiv='refresh' content='0'>";
+            }
+        ?>
+
+
+
+
+
+
+
+
+        <!--Lógica de ativação -->
+
+
+        <?php 
+            if(isset($_POST['ativar-funcionario'])){
+                $id = $_POST['id_ativar'];
+                $q = "UPDATE tabela_funcionarios SET data_demissao = NULL WHERE id = '$id'";
+                $banco->query($q);
+                echo "<meta http-equiv='refresh' content='0'>";
+            }
+        ?>
+
+
+
+
+
+
+
+
+
+
+        
+        <!-- Tabela de listagem -->
+
+
 
         <div class="card border-0 rounded-4 overflow-hidden">
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0 align-middle">
+                        
+
+
                         <thead class="bg-light border-bottom">
                             <tr>
                                 <th class="ps-4 py-3 text-secondary border-0">Funcionário</th>
@@ -84,7 +165,8 @@
                         </thead>
 
 
-                        <!-- Lógica de listar todos os funcionarios -->
+
+                        <!-- Lógica de listar funcionarios -->
 
                         <?php
                         $q = "SELECT * FROM tabela_funcionarios";
@@ -94,21 +176,18 @@
                             echo '<tbody>';
                             while ($reg = $busca->fetch_object()) {
                                 echo '<tr>
-                                        <td class="ps-4">
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                     <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                                <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px;height: 40px;">
                                                     <i class="fa-regular fa-user"></i>
                                                 </div>
-                                                <div>
+                                            <div>
                                                     <h6 class="mb-0 fw-semibold">' . $reg->nome . '</h6>
-                                                </div>
                                             </div>
-                                        </td>
-
-                                        <!-- Botão de editar -->
+                                        </div>
+                                     </td>
 
                                         <td class="pe-4 text-end">
-                                            
                                             <input type="button" 
                                                 class="btn btn-sm btn-outline-info rounded-pill me-1" 
                                                 value="Visualizar" 
@@ -128,26 +207,39 @@
                                                 data-bs-target="#modalEditar_func"
                                                 data-id="' . $reg->id . '"
                                                 data-nome="' . $reg->nome . '"
-                                                onclick="carregarDadosEdicao(this)">
+                                                onclick="carregarDadosEdicao(this)">';
 
-                                            <input type="button" 
+                                if ($reg->data_demissao == null) {
+                                    echo '<button type="button" 
                                                 class="btn btn-sm btn-outline-danger rounded-pill me-1" 
-                                                value="Desligar" 
                                                 title="Desligar" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#modalDesligar_func"
                                                 data-id="' . $reg->id . '"
                                                 data-nome="' . $reg->nome . '"
                                                 onclick="confirmarDesligamento(this)">
-
-                                        </td>
-                                    </tr>';
+                                                Desligar
+                                            </button>';
+                                } else {
+                                    echo '<button type="button" 
+                                                class="btn btn-sm btn-success rounded-pill me-1"
+                                                title="Ativar" 
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalReativar_func"
+                                                data-id="' . $reg->id . '"
+                                                data-nome="' . $reg->nome . '"
+                                                onclick="confirmarAtivacao(this)">
+                                                Ativar
+                                            </button>';
+                                }
                             }
-                            echo '</tbody>';
                         } else {
                             echo '<tbody><tr><td colspan="2" class="text-center">Nenhum funcionário cadastrado.</td></tr></tbody>';
                         }
                         ?>
+
+
+
 
                     </table>
                 </div>
@@ -155,160 +247,212 @@
         </div>
     </div>
 
-        <!-- Modal de visualizar funcionário -->
 
-        <div class="modal fade" id="modalVisualizar" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header border-bottom-0">
-                        <h5 class="modal-title fw-bold">Detalhes do Funcionário</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body py-4 px-4">
-                        <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold">NOME COMPLETO</label>
-                            <input type="text" class="form-control bg-light" id="visualizar_nome" readonly>
-                        </div>
-                        <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold">CPF</label>
-                            <input type="text" class="form-control bg-light" id="visualizar_cpf" readonly>
-                        </div>
-                        <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold">DATA DE CONTRATAÇÃO</label>
-                            <input type="text" class="form-control bg-light" id="visualizar_contratacao" readonly>
-                        </div>
-                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Modal de visualização -->
+
+    <div class="modal fade" id="modalVisualizar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Detalhes do Funcionário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            </div>
-        </div>
-
-        <!-- Modal de editar funcionário -->
-
-        <div class="modal fade" id="modalEditar_func" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header border-bottom-0">
-                        <h5 class="modal-title fw-bold">Editar Funcionário</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-body py-4 px-4">
+                    <div class="mb-3 text-start">
+                        <label class="form-label text-muted small fw-bold">NOME COMPLETO</label>
+                        <input type="text" class="form-control bg-light" id="visualizar_nome" readonly>
                     </div>
-
-
-                    <div class="modal-body py-4 px-4">
-                        <form method="post">
-                            <input type="hidden" name="id_edit" id="id_edit">
-
-                            <!-- Campo de nome completo -->
-
-                            <div class="mb-3 text-start">
-                                <label class="form-label text-muted small fw-bold">NOME COMPLETO</label>
-                                <input type="text" class="form-control bg-light" id="funcionario_edit" name="nome_edit" required>
-                            </div>
-
-                            <!-- Botão de salvar alterações -->
-
-                            <div class="modal-footer border-top-0 justify-content-center">
-                                <button type="submit" name="editar_funcionario" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Salvar Alterações</button>
-                            </div>
-                        </form>
+                    <div class="mb-3 text-start">
+                        <label class="form-label text-muted small fw-bold">CPF</label>
+                        <input type="text" class="form-control bg-light" id="visualizar_cpf" readonly>
                     </div>
-
-
-
-                </div>
-            </div>
-        </div>
-
-                <!-- Modal de desligar funcionário -->
-
-        <div class="modal fade" id="modalDesligar_func" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content rounded-4 border-0 shadow">
-
-                    <div class="modal-header border-bottom-0 justify-content-center position-relative">
-                        <h5 class="modal-title fw-bold text-danger fs-4">DESLIGAMENTO</h5>
-                        <button type="button"class="btn-close position-absolute end-0 me-3"data-bs-dismiss="modal"aria-label="Close"></button>
-                    </div>
-
-                    <div class="modal-body py-4 px-4">
-                        <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold">Você tem certeza que quer desligar o funcionário abaixo?</label>
-                            <input type="text" class="form-control bg-light" id="conf"readonly>
-                        </div>
-                    </div>
-                    <div class="modal-footer border-top-0 justify-content-center gap-3">
-                        <button type="button" class="btn btn-secondary btn-lg px-5 rounded-pill shadow-sm" data-bs-dismiss="modal">Não</button>
-                        <form method="post">
-                            <input type="hidden" name="id_desligamento" id="id_desligamento">
-                            <button type="submit" class="btn btn-danger btn-lg px-5 rounded-pill shadow-sm" name="desligar-funcionario">Sim</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <?php 
-            if(isset($_POST['desligar-funcionario'])){
-                $id = $_POST['id_desligamento'];
-                $q = "UPDATE tabela_funcionarios SET data_demissao = NOW() WHERE id = '$id'";
-
-                $banco->query($q);
-
-                echo "<meta http-equiv='refresh' content='0'>";
-            }
-        ?>
-
-
-
-        <!-- Modal de cadastro de funcionários  -->
-
-        <div class="modal fade" id="modalCadastrar" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header border-bottom-0">
-                        <h5 class="modal-title fw-bold">Cadastrar Funcionário</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-
-                    <!-- Campo de CPF -->
-
-                    <div class="modal-body py-4 px-4">
-                        <form method="post">
-                            <div class="mb-3 text-start">
-                                <label for="cpf" class="form-label text-muted small fw-bold">CPF</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0 text-primary">
-                                        <i class="fa-regular fa-file"></i>
-                                    </span>
-                                    <input type="text" oninput="mascara(this)" class="form-control bg-light border-start-0 ps-0" id="cpf" name="cpf" minlength="11" required placeholder="Digite o CPF">
-                                </div>
-                            </div>
-
-
-                            <!-- Campo de nome completo  -->
-
-                            <div class="mb-3 text-start">
-                                <label for="pass" class="form-label text-muted small fw-bold">NOME COMPLETO</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0 text-primary">
-                                        <i class="fa-solid fa-user"></i>
-                                    </span>
-                                    <input type="text" class="form-control bg-light border-start-0 ps-0" id="name" name="nome" maxlength="100" placeholder="Digite seu nome completo">
-                                </div>
-                            </div>
-
-                            <!-- Botão submit -->
-
-                            <div class="modal-footer border-top-0 justify-content-center">
-                                <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Cadastrar</button>
-                            </div>
-
-                        </form>
+                    <div class="mb-3 text-start">
+                        <label class="form-label text-muted small fw-bold">DATA DE CONTRATAÇÃO</label>
+                        <input type="text" class="form-control bg-light" id="visualizar_contratacao" readonly>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+    <!-- Modal de Edição -->
+
+    <div class="modal fade" id="modalEditar_func" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Editar Funcionário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4 px-4">
+                    <form method="post">
+                        <input type="hidden" name="id_edit" id="id_edit">
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-bold">NOME COMPLETO</label>
+                            <input type="text" class="form-control bg-light" id="funcionario_edit" name="nome_edit" required>
+                        </div>
+
+                        <div class="modal-footer border-top-0 justify-content-center">
+                            <button type="submit" name="editar_funcionario" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+    <!-- Modal de desligamento -->
+
+    <div class="modal fade" id="modalDesligar_func" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom-0 justify-content-center position-relative">
+                    <h5 class="modal-title fw-bold text-danger fs-4">DESLIGAMENTO</h5>
+                    <button type="button" class="btn-close position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body py-4 px-4">
+                    <div class="mb-3 text-start">
+                        <label class="form-label text-muted small fw-bold">Você tem certeza que quer desligar o funcionário abaixo?</label>
+                        <input type="text" class="form-control bg-light" id="conf" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 justify-content-center gap-3">
+                    <button type="button" class="btn btn-secondary btn-lg px-5 rounded-pill shadow-sm" data-bs-dismiss="modal">Não</button>
+                    <form method="post">
+                        <input type="hidden" name="id_desligamento" id="id_desligamento">
+                        <button type="submit" class="btn btn-danger btn-lg px-5 rounded-pill shadow-sm" name="desligar-funcionario">Sim</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Modal de Ativação -->
+
+    <div class="modal fade" id="modalReativar_func" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom-0 justify-content-center position-relative">
+                    <h5 class="modal-title fw-bold text-success fs-4">ATIVAÇÃO</h5>
+                    <button type="button" class="btn-close position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body py-4 px-4">
+                    <div class="mb-3 text-start">
+                        <label class="form-label text-muted small fw-bold">Você tem certeza que quer ativar o funcionário abaixo?</label>
+                        <input type="text" class="form-control bg-light" id="confativ" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 justify-content-center gap-3">
+                    <button type="button" class="btn btn-secondary btn-lg px-5 rounded-pill shadow-sm" data-bs-dismiss="modal">Não</button>
+                    <form method="post">
+                        <input type="hidden" name="id_ativar" id="id_ativar">
+                        <button type="submit" class="btn btn-success btn-lg px-5 rounded-pill shadow-sm" name="ativar-funcionario">Sim</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    
+
+
+
+
+
+
+    <!-- Modal de cadastrar funcionário -->
+
+    <div class="modal fade" id="modalCadastrar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Cadastrar Funcionário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body py-4 px-4">
+                    <form method="post">
+                        <div class="mb-3 text-start">
+                            <label for="cpf" class="form-label text-muted small fw-bold">CPF</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-primary">
+                                    <i class="fa-regular fa-file"></i>
+                                </span>
+                                <input type="text" oninput="mascara(this)" class="form-control bg-light border-start-0 ps-0" id="cpf" name="cpf" minlength="11" required placeholder="Digite o CPF">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label for="nome" class="form-label text-muted small fw-bold">NOME COMPLETO</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-primary">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                                <input type="text" class="form-control bg-light border-start-0 ps-0" id="name" name="nome" maxlength="100" placeholder="Digite seu nome completo">
+                            </div>
+                        </div>
+
+                        <div class="modal-footer border-top-0 justify-content-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Cadastrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
@@ -316,6 +460,11 @@
 </html>
 
 <script>
+
+
+
+
+
     document.addEventListener("DOMContentLoaded", function() {
         var alerta = document.getElementById('msgErro');
 
@@ -330,8 +479,14 @@
         }
     });
 
-    // Função para preencher o modal de edição
 
+
+
+
+
+
+
+    // Função para preencher o modal de edição
     function carregarDadosEdicao(botao) {
         var id = botao.getAttribute('data-id');
         var funcionario = botao.getAttribute('data-nome');
@@ -340,8 +495,14 @@
         document.getElementById('funcionario_edit').value = funcionario;
     }
 
-    // Função para preencher o modal de visualização
+
+
+
+
+
     
+
+    // Função para preencher o modal de visualização
     function carregarDadosVisualizacao(botao) {
         var nome = botao.getAttribute('data-nome');
         var cpf = botao.getAttribute('data-cpf');
@@ -349,11 +510,16 @@
 
         document.getElementById('visualizar_nome').value = nome;
         document.getElementById('visualizar_cpf').value = cpf;
-        document.getElementById('visualizar_contratacao').value = contratacao;
+        document.getElementById('visualizar_contratacao').value = contratacao ? contratacao : "";
     }
 
-        // Função para confirmar desligamento do funcionario
-    
+
+
+
+
+
+
+    // Função para confirmar desligamento do funcionario
     function confirmarDesligamento(botao) {
         var id = botao.getAttribute('data-id');
         var nome = botao.getAttribute('data-nome');
@@ -362,10 +528,30 @@
         document.getElementById('id_desligamento').value = id;
     }
 
-    //funcao para padronizar cpf
 
+
+
+
+
+
+
+    // Função para confirmar ativacao do funcionario
+    function confirmarAtivacao(botao){
+        var id = botao.getAttribute('data-id');
+        var nome = botao.getAttribute('data-nome');
+
+        document.getElementById('confativ').value = nome;
+        document.getElementById('id_ativar').value = id;
+    }
+
+
+
+
+
+
+
+    // Funcao para formatar para modelo de cpf
     function mascara(i) {
-
         var v = i.value;
 
         if (isNaN(v[v.length - 1])) {
@@ -376,6 +562,5 @@
         i.setAttribute("maxlength", "14");
         if (v.length == 3 || v.length == 7) i.value += ".";
         if (v.length == 11) i.value += "-";
-
     }
 </script>
