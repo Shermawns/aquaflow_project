@@ -34,32 +34,51 @@
             </button>
 
 
+            <!-- Lógica de registro-->
+
+            <?php
+            if (isset($_POST['usuario'])) {
+
+                $user = $_POST['usuario'];
+                $pass = $_POST['senha'];
+                $confpass = $_POST['confirmar'];
+
+                $q = "SELECT usuario FROM tabela_usuarios WHERE usuario = '$user'";
+
+                $busca = $banco->query($q);
+
+                if ($busca->num_rows > 0) {
+                    echo "<div class='alert alert-warning' id='msgErro'><strong>Usuario já cadastrado!</strong></div>";
+                } else {
+                    if ($pass == $confpass) {
+                        $hash = gerarHash($pass);
+
+                        $banco->query("INSERT INTO tabela_usuarios (usuario, senha) VALUES ('$user', '$hash')");
+                    } else {
+                        echo "<div class='alert alert-warning' id='msgErro'><strong>As senhas não se conferem!</strong></div>";
+                    }
+                }
+            }
+            ?>
+
+            <!-- Lógica de deletar conta -->
+
             <?php 
-                if (isset($_POST['usuario'])){
-                    
-                    $user = $_POST['usuario'];
-                    $pass = $_POST['senha'];
-                    $confpass = $_POST['confirmar'];
+                if (isset($_GET['id'])) {
+                    $conta = $_GET['id'];
 
-                    $q = "SELECT usuario FROM tabela_usuarios WHERE usuario = '$user'";
+                    $busca = $banco->query("SELECT usuario FROM tabela_usuarios WHERE id = '$conta'");
+                    $reg = $busca->fetch_object();
 
-                    $busca = $banco->query($q);
+                    $delete = $banco->query("DELETE FROM tabela_usuarios WHERE id = '$conta'");
 
-                    if($busca->num_rows > 0){
-                        echo "<div class='alert alert-warning' id='msgErro'><strong>Usuario já cadastrado!</strong></div>";
-                    }else{
-                        if($pass == $confpass){
-                            $hash = gerarHash($pass);
-                        
-                            $banco->query("INSERT INTO tabela_usuarios (usuario, senha) VALUES ('$user', '$hash')");
-
-                        }else{
-                            echo "<div class='alert alert-warning' id='msgErro'><strong>As senhas não se conferem!</strong></div>";
-                        }
+                    if ($delete && $reg && $reg->usuario == $_SESSION['usuario']) {
+                        session_destroy();
+                        header('Location: login.php');
+                        exit;
                     }
                 }
             ?>
-
             <!-- Modal de cadastro de usuarios -->
 
             <div class="modal fade" id="modalCadastrar" tabindex="-1" aria-hidden="true">
@@ -131,45 +150,44 @@
                             </tr>
                         </thead>
                         <?php
-                            $q = "SELECT * FROM tabela_usuarios";
-                            $busca = $banco->query($q);
+                        $q = "SELECT * FROM tabela_usuarios";
+                        $busca = $banco->query($q);
 
-                            if($busca->num_rows > 0){
-                                echo '<tbody>';
-                                while($reg = $busca->fetch_object()){
-                                    echo '<tr>
-                                            <td class="ps-4">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                                        <i class="fa-regular fa-user"></i>
+                        if ($busca->num_rows > 0) {
+                            echo '<tbody>';
+                            while ($reg = $busca->fetch_object()) {
+                                echo '<tr>
+                                                <td class="ps-4">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                            <i class="fa-regular fa-user"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-0 fw-semibold">' . $reg->usuario . '</h6>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <h6 class="mb-0 fw-semibold">' . $reg->usuario . '</h6>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="pe-4 text-end">
-                                                <button class="btn btn-sm btn-outline-primary border-0 rounded-circle me-1" title="Editar" data-bs-toggle="modal" data-bs-target="#modalEditar_func">
-                                                    <i class="fa-regular fa-pen-to-square"></i>
-                                                </button>
-                                                
-                                                <button class="btn btn-sm btn-outline-danger border-0 rounded-circle" title="Excluir" onclick="confirmarExclusao(\'' . $reg->usuario . '\')">
-                                                    <i class="fa-regular fa-trash-can"></i>
-                                                </button>
-                                            </td>
-                                        </tr>';
-                                }
-                                echo '</tbody>';
-                            } else {
-                                echo '<tbody><tr><td colspan="2" class="text-center">Nenhum usuário cadastrado.</td></tr></tbody>';
+                                                </td>
+                                                <td class="pe-4 text-end"><td class="pe-4 text-end">
+                                                    
+                                                    <input type="button" 
+                                                        class="btn btn-sm btn-outline-danger rounded-pill" 
+                                                        value="Excluir" 
+                                                        onclick="window.location.href=\'usuario.php?id=' . $reg->id . '\'">
+
+                                                </td>
+                                            </tr>';
                             }
+                            echo '</tbody>';
+                        } else {
+                            echo '<tbody><tr><td colspan="2" class="text-center">Nenhum usuário cadastrado.</td></tr></tbody>';
+                        }
                         ?>
                     </table>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
@@ -178,15 +196,15 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         var alerta = document.getElementById('msgErro');
-    
+
         if (alerta) {
             setTimeout(function() {
                 alerta.style.transition = "opacity 0.5s ease";
                 alerta.style.opacity = "0";
-                setTimeout(function(){
+                setTimeout(function() {
                     alerta.remove();
-                }, 500); 
+                }, 500);
             }, 3000);
-        }   
+        }
     });
 </script>
