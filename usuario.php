@@ -7,6 +7,7 @@
     <title>Gerenciar Usuários - AquaFlow</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -23,6 +24,8 @@
         require_once "config/function.php";
         require "header.php";
 
+        $toast_mensagem = "";
+        $toast_tipo = "";
 
     ?>
 
@@ -60,14 +63,16 @@
             $busca = $banco->query($q);
 
             if ($busca->num_rows > 0) {
-                echo "<div class='alert alert-warning' id='msgErro'><strong>Usuario já cadastrado!</strong></div>";
+                $toast_mensagem = "Erro: Usuário já cadastrado!";
+                $toast_tipo = "erro";
             } else {
                 if ($pass == $confpass) {
                     $hash = gerarHash($pass);
 
                     $banco->query("INSERT INTO tabela_usuarios (usuario, senha) VALUES ('$user', '$hash')");
                 } else {
-                    echo "<div class='alert alert-warning' id='msgErro'><strong>As senhas não se conferem!</strong></div>";
+                    $toast_mensagem = "Erro: As senhas não conferem!";
+                    $toast_tipo = "erro";
                 }
             }
         }
@@ -309,7 +314,7 @@
             </div>
         </div>
     </div>
-
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
@@ -340,3 +345,26 @@
         document.getElementById('usuario_edit').value = usuario;
     }
 </script>
+
+<script>
+        var mensagem = "<?php echo $toast_mensagem; ?>";
+        var tipo = "<?php echo $toast_tipo; ?>";
+
+        if (mensagem) {
+            var corFundo = tipo === "sucesso" 
+                ? "linear-gradient(to right, #00b09b, #2cabd1ff)" 
+                : "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+
+            Toastify({
+                text: mensagem,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                stopOnFocus: true,
+                style: {
+                    background: corFundo,
+                }
+            }).showToast();
+        }
+    </script>
