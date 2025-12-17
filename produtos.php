@@ -57,6 +57,40 @@
                 }
         ?>
 
+        <?php 
+            if(isset($_POST['cadastrar_produto'])){
+
+                $name  = $_POST['produto'];
+                $preco = $_POST['preco'];
+                $qtd   = $_POST['qtd'];
+
+
+                $check_sql = "SELECT id FROM tabela_produtos WHERE nome_produto = '$name'";
+                $busca = $banco->query($check_sql);
+
+                if($qtd < 0){
+                    $toast_mensagem = "Erro: Não é possivel cadastrar um produto com quantidade negativa!";
+                    $toast_tipo = "erro"; 
+                }else{
+                    if($busca->num_rows > 0){
+                    $toast_mensagem = "Erro: Já existe um produto com este nome!";
+                    $toast_tipo = "erro"; 
+                } else {
+                    $q = "INSERT INTO tabela_produtos (nome_produto, vlr_unitario, qtd_estoque)
+                        VALUES ('$name', '$preco', '$qtd')";
+                    
+                    if($banco->query($q)){
+                        $toast_mensagem = "Produto cadastrado com sucesso!";
+                        $toast_tipo = "sucesso";
+                    } else {
+                        $toast_mensagem = "Erro ao inserir no banco de dados.";
+                        $toast_tipo = "erro";
+                    }
+                }
+                }
+            }
+        ?>
+
 
         <div class="container py-5">
             <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
@@ -64,7 +98,7 @@
                     <h2 class="fw-bold mb-1" style="color: #0d6efd;">Produtos</h2>
                     <p class="text-muted mb-0">Gerenciamento de produtos</p>
                 </div>
-                <button type="button" class="btn btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCadastrar">
+                <button type="button" class="btn btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCadastrar_product">
                 <i class="fa-solid fa-plus me-2"></i>Cadastrar produto
                 </button>
             </div>
@@ -150,7 +184,40 @@
                             <input type="number" class="form-control bg-light" id="qtd_edit" name="qtd" required>
                         </div>
                         <div class="modal-footer border-top-0 justify-content-center">
-                            <button type="submit" onclick="mostrarNotificacao()" name="editar_produto" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Salvar Alterações</button>
+                            <button type="submit" name="editar_produto" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+        <div class="modal fade" id="modalCadastrar_product" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Cadastrar produto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4 px-4">
+                    <form method="post">
+                        <input type="hidden" name="id" id="id_edit">
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-bold">NOME DO PRODUTO</label>
+                            <input type="text" class="form-control bg-light" id="produto_edit" name="produto" required>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-bold">PREÇO UNITÁRIO</label>
+                            <input type="number" step="0.01" class="form-control bg-light" id="preco_edit" name="preco" required>
+                        </div>
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-bold">QUANTIDADE</label>
+                            <input type="number" class="form-control bg-light" id="qtd_edit" name="qtd" required>
+                        </div>
+                        <div class="modal-footer border-top-0 justify-content-center">
+                            <button type="submit" name="cadastrar_produto" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Salvar Alterações</button>
                         </div>
                     </form>
                 </div>
@@ -177,10 +244,12 @@
         document.getElementById('produto_edit').value = produto;
         document.getElementById('qtd_edit').value = qtd;
         document.getElementById('preco_edit').value = preco;
-        
-
     }
+
+
 </script>
+
+
 <script>
         var mensagem = "<?php echo $toast_mensagem; ?>";
         var tipo = "<?php echo $toast_tipo; ?>";
