@@ -87,13 +87,13 @@
             $pass = $_POST['senha_edit'];
             $conf = $_POST['confirmar_edit'];
 
-            if (empty($pass_edit)) {
+            if (empty($pass)) {
                 $q = "UPDATE tabela_usuarios SET usuario = '$user' WHERE id = '$id'";
                 $banco->query($q);
                 echo "<meta http-equiv='refresh' content='0'>";
             } else {
                 if ($pass == $conf) {
-                    $hash = gerarHash($pass_edit);
+                    $hash = gerarHash($pass);
                     $q = "UPDATE tabela_usuarios SET usuario = '$user', senha = '$hash' WHERE id = '$id'";
                     $banco->query($q);
                     echo "<meta http-equiv='refresh' content='0'>";
