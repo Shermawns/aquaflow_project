@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aquaflow - Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -15,6 +17,9 @@
 
     require_once "config/banco.php";
     require_once "config/function.php";
+
+    $toast_mensagem = "";
+    $toast_tipo = "";
 
     $user = $_POST['usuario'] ?? null;
     $pass = $_POST['senha'] ?? null;
@@ -28,13 +33,16 @@
             $reg = $busca->fetch_object();
             if(testarHash($pass, $reg->senha)){
                 $_SESSION['usuario'] = $reg->usuario;
-                echo "<div class='alert alert-success' id='msgErro'><strong>Login realizado com sucesso!</strong></div>";
+                $toast_mensagem = "Bem vindo novamente " . $user; "!";
+                $toast_tipo = "sucesso";
                 header('location: main.php');   
             }else{
-                echo "<div class='alert alert-danger' id='msgErro'><strong>Senha incorreta!</strong></div>";
+                $toast_mensagem = "Erro: Senha incorreta!";
+                $toast_tipo = "erro";
             }
         }else{
-            echo "<div class='alert alert-warning' id='msgErro'><strong>Usuario não cadastrado!</strong></div>";
+            $toast_mensagem = "Erro: Usuário não cadastrado!";
+            $toast_tipo = "erro";
         }
     }
 ?>
@@ -66,20 +74,29 @@
             </div>
         </div>
     </div>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </body>
 </html>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var alerta = document.getElementById('msgErro');
-    
-        if (alerta) {
-            setTimeout(function() {
-                alerta.style.transition = "opacity 0.5s ease";
-                alerta.style.opacity = "0";
-                setTimeout(function(){
-                    alerta.remove();
-                }, 500); 
-            }, 3000);
-        }   
-    });
-</script>
+        var mensagem = "<?php echo $toast_mensagem; ?>";
+        var tipo = "<?php echo $toast_tipo; ?>";
+
+        if (mensagem) {
+            var corFundo = tipo === "sucesso" 
+                ? "linear-gradient(to right, #00b09b, #2cabd1ff)" 
+                : "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+
+            Toastify({
+                text: mensagem,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                stopOnFocus: true,
+                style: {
+                    background: corFundo,
+                }
+            }).showToast();
+        }
+    </script>
