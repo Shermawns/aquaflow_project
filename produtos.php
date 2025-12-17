@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="style.css">
     <title>Gerenciar Produtos - AquaFlow</title>
 </head>
@@ -20,6 +21,9 @@
         require_once "config/banco.php";
         require_once "config/function.php";
         require "header.php";
+
+        $toast_mensagem = "";
+        $toast_tipo = "";
     ?>
 
 
@@ -38,17 +42,19 @@
                     $reg = $res->fetch_object();
 
                     if($qtd < $reg->qtd_estoque){
-                        echo "pode nao";
+                        $toast_mensagem = "Erro: A quantidade não pode ser menor que o estoque atual!";
+                        $toast_tipo = "erro"; 
                     } else {
-                        $sql = "UPDATE tabela_produtos 
-                                SET nome_produto = '$name',
-                                    vlr_unitario = '$preco',
-                                    qtd_estoque = '$qtd'
-                                WHERE id = '$id'";
-                        $banco->query($sql);
-                    }
-            }
-
+                        $sql = "UPDATE tabela_produtos SET nome_produto = '$name', vlr_unitario = '$preco', qtd_estoque = '$qtd' WHERE id = '$id'";
+                            if($banco->query($sql)){
+                                $toast_mensagem = "Produto atualizado com sucesso!";
+                                $toast_tipo = "sucesso";
+                            } else {
+                                $toast_mensagem = "Erro ao atualizar no banco!";
+                                $toast_tipo = "erro";
+                            }
+                        }
+                }
         ?>
 
 
@@ -144,7 +150,7 @@
                             <input type="number" class="form-control bg-light" id="qtd_edit" name="qtd" required>
                         </div>
                         <div class="modal-footer border-top-0 justify-content-center">
-                            <button type="submit" name="editar_produto" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Salvar Alterações</button>
+                            <button type="submit" onclick="mostrarNotificacao()" name="editar_produto" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Salvar Alterações</button>
                         </div>
                     </form>
                 </div>
@@ -155,6 +161,7 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 </body>
 </html>
@@ -170,6 +177,29 @@
         document.getElementById('produto_edit').value = produto;
         document.getElementById('qtd_edit').value = qtd;
         document.getElementById('preco_edit').value = preco;
+        
 
     }
 </script>
+<script>
+        var mensagem = "<?php echo $toast_mensagem; ?>";
+        var tipo = "<?php echo $toast_tipo; ?>";
+
+        if (mensagem) {
+            var corFundo = tipo === "sucesso" 
+                ? "linear-gradient(to right, #00b09b, #2cabd1ff)" 
+                : "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+
+            Toastify({
+                text: mensagem,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                stopOnFocus: true,
+                style: {
+                    background: corFundo,
+                }
+            }).showToast();
+        }
+    </script>
