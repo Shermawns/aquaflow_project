@@ -8,43 +8,44 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
 
 
-<?php 
-    session_start();
+<?php
+session_start();
 
-    require_once "config/banco.php";
-    require_once "config/function.php";
+require_once "../config/banco.php";
+require_once "../config/function.php";
 
-    $toast_mensagem = "";
-    $toast_tipo = "";
+$toast_mensagem = "";
+$toast_tipo = "";
 
-    $user = $_POST['usuario'] ?? null;
-    $pass = $_POST['senha'] ?? null;
+$user = $_POST['usuario'] ?? null;
+$pass = $_POST['senha'] ?? null;
 
 
-    if(!is_null($user) && !is_null($pass)){
-        $val = "SELECT usuario, senha FROM tabela_usuarios WHERE usuario='$user' ";
-        $busca = $banco->query($val);
+if (!is_null($user) && !is_null($pass)) {
+    $val = "SELECT usuario, senha FROM tabela_usuarios WHERE usuario='$user' ";
+    $busca = $banco->query($val);
 
-        if($busca->num_rows > 0){
-            $reg = $busca->fetch_object();
-            if(testarHash($pass, $reg->senha)){
-                $_SESSION['usuario'] = $reg->usuario;
-                $toast_mensagem = "Bem vindo novamente " . $user; "!";
-                $toast_tipo = "sucesso";
-                header('location: main.php');   
-            }else{
-                $toast_mensagem = "Erro: Senha incorreta!";
-                $toast_tipo = "erro";
-            }
-        }else{
-            $toast_mensagem = "Erro: Usuário não cadastrado!";
+    if ($busca->num_rows > 0) {
+        $reg = $busca->fetch_object();
+        if (testarHash($pass, $reg->senha)) {
+            $_SESSION['usuario'] = $reg->usuario;
+            $toast_mensagem = "Bem vindo novamente " . $user;
+            "!";
+            $toast_tipo = "sucesso";
+            header('location: ../pages/main.php');
+        } else {
+            $toast_mensagem = "Erro: Senha incorreta!";
             $toast_tipo = "erro";
         }
+    } else {
+        $toast_mensagem = "Erro: Usuário não cadastrado!";
+        $toast_tipo = "erro";
     }
+}
 ?>
 
 <body>
@@ -52,7 +53,7 @@
         <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 400px; width: 100%;">
             <div class="card-body">
                 <div class="text-center mb-4">
-                    <img src="imgs/Gemini_Generated_Image_3y2rqt3y2rqt3y2r.png" alt="Logo AquaFlow" class="img-fluid mb-2" style="max-width: 300px;">
+                    <img src="../imgs/Gemini_Generated_Image_3y2rqt3y2rqt3y2r.png" alt="Logo AquaFlow" class="img-fluid mb-2" style="max-width: 300px;">
                     <h2 class="h5 text-primary">Acesse sua conta</h2>
                 </div>
 
@@ -77,26 +78,27 @@
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </body>
+
 </html>
 <script>
-        var mensagem = "<?php echo $toast_mensagem; ?>";
-        var tipo = "<?php echo $toast_tipo; ?>";
+    var mensagem = "<?php echo $toast_mensagem; ?>";
+    var tipo = "<?php echo $toast_tipo; ?>";
 
-        if (mensagem) {
-            var corFundo = tipo === "sucesso" 
-                ? "linear-gradient(to right, #00b09b, #2cabd1ff)" 
-                : "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+    if (mensagem) {
+        var corFundo = tipo === "sucesso" ?
+            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
+            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
 
-            Toastify({
-                text: mensagem,
-                duration: 3000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                stopOnFocus: true,
-                style: {
-                    background: corFundo,
-                }
-            }).showToast();
-        }
-    </script>
+        Toastify({
+            text: mensagem,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            stopOnFocus: true,
+            style: {
+                background: corFundo,
+            }
+        }).showToast();
+    }
+</script>

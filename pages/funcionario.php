@@ -7,7 +7,7 @@
     <title>Gerenciar Funcionários - AquaFlow</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
 
 
@@ -27,16 +27,16 @@
 
 
     <?php
-        session_start();
-        if (!isset($_SESSION['usuario'])) {
-            header("location: login.php");
-            exit;
-        }
+    session_start();
+    if (!isset($_SESSION['usuario'])) {
+        header("location: ../login/login.php");
+        exit;
+    }
 
-        require_once "config/banco.php";
-        require_once "config/function.php";
-        require "header.php";
-        ?>
+    require_once "../config/banco.php";
+    require_once "../config/function.php";
+    require "../includes/header.php";
+    ?>
 
 
 

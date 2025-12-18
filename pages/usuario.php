@@ -8,24 +8,24 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
 
 <body>
     <?php
 
-        session_start();
-        if (!isset($_SESSION['usuario'])) {
-            header("location: login.php");
-            exit;
-        }
+    session_start();
+    if (!isset($_SESSION['usuario'])) {
+        header("location: ../login/login.php");
+        exit;
+    }
 
-        require_once "config/banco.php";
-        require_once "config/function.php";
-        require "header.php";
+    require_once "../config/banco.php";
+    require_once "../config/function.php";
+    require "../includes/header.php";
 
-        $toast_mensagem = "";
-        $toast_tipo = "";
+    $toast_mensagem = "";
+    $toast_tipo = "";
 
     ?>
 
@@ -125,7 +125,7 @@
 
             if ($delete && $reg && $reg->usuario == $_SESSION['usuario']) {
                 session_destroy();
-                header('Location: login.php');
+                header('Location: ../login/login.php');
                 exit;
             }
         }
@@ -149,7 +149,7 @@
 
 
 
-                        <!-- Lógica de listar todos os usuários --> 
+                        <!-- Lógica de listar todos os usuários -->
 
                         <?php
                         $q = "SELECT * FROM tabela_usuarios";
@@ -206,7 +206,7 @@
             </div>
         </div>
 
-                    <!-- Modal de editar usuário -->
+        <!-- Modal de editar usuário -->
 
         <div class="modal fade" id="modalEditar_func" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -306,7 +306,7 @@
                             <div class="modal-footer border-top-0 justify-content-center">
                                 <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Cadastrar</button>
                             </div>
-                            
+
                         </form>
                     </div>
                 </div>
@@ -335,7 +335,7 @@
     });
 
     // Função para preencher o modal de edição
-    
+
     function carregarDadosEdicao(botao) {
         var id = botao.getAttribute('data-id');
         var usuario = botao.getAttribute('data-usuario');
@@ -346,24 +346,24 @@
 </script>
 
 <script>
-        var mensagem = "<?php echo $toast_mensagem; ?>";
-        var tipo = "<?php echo $toast_tipo; ?>";
+    var mensagem = "<?php echo $toast_mensagem; ?>";
+    var tipo = "<?php echo $toast_tipo; ?>";
 
-        if (mensagem) {
-            var corFundo = tipo === "sucesso" 
-                ? "linear-gradient(to right, #00b09b, #2cabd1ff)" 
-                : "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+    if (mensagem) {
+        var corFundo = tipo === "sucesso" ?
+            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
+            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
 
-            Toastify({
-                text: mensagem,
-                duration: 3000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                stopOnFocus: true,
-                style: {
-                    background: corFundo,
-                }
-            }).showToast();
-        }
-    </script>
+        Toastify({
+            text: mensagem,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            stopOnFocus: true,
+            style: {
+                background: corFundo,
+            }
+        }).showToast();
+    }
+</script>

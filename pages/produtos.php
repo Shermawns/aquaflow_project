@@ -1,133 +1,135 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../assets/style.css">
     <title>Gerenciar Produtos - AquaFlow</title>
 </head>
+
 <body>
 
-    <?php 
-        session_start();
-        if(!isset($_SESSION['usuario'])){
-            header('location:login.php');
-            exit();
-        }
+    <?php
+    session_start();
+    if (!isset($_SESSION['usuario'])) {
+        header('location:../login/login.php');
+        exit();
+    }
 
-        require_once "config/banco.php";
-        require_once "config/function.php";
-        require "header.php";
+    require_once "../config/banco.php";
+    require_once "../config/function.php";
+    require "../includes/header.php";
 
-        $toast_mensagem = "";
-        $toast_tipo = "";
+    $toast_mensagem = "";
+    $toast_tipo = "";
     ?>
 
 
-    
-        <?php 
-            if(isset($_POST['editar_produto'])){
 
-                    $id    = $_POST['id'];
-                    $name  = $_POST['produto'];
-                    $preco = $_POST['preco'];
-                    $qtd   = $_POST['qtd'];
+    <?php
+    if (isset($_POST['editar_produto'])) {
 
-                    $preco = str_replace(',', '.', $preco);
+        $id    = $_POST['id'];
+        $name  = $_POST['produto'];
+        $preco = $_POST['preco'];
+        $qtd   = $_POST['qtd'];
 
-                    
-                    $sql = "SELECT qtd_estoque FROM tabela_produtos WHERE id = '$id'";
-                    $res = $banco->query($sql);
-                    $reg = $res->fetch_object();
-
-                    if($qtd < $reg->qtd_estoque){
-                        $toast_mensagem = "Erro: A quantidade não pode ser menor que o estoque atual!";
-                        $toast_tipo = "erro"; 
-                    } else {
-                        $sql = "UPDATE tabela_produtos SET nome_produto = '$name', vlr_unitario = '$preco', qtd_estoque = '$qtd' WHERE id = '$id'";
-                            if($banco->query($sql)){
-                                $toast_mensagem = "Produto atualizado com sucesso!";
-                                $toast_tipo = "sucesso";
-                            } else {
-                                $toast_mensagem = "Erro ao atualizar no banco!";
-                                $toast_tipo = "erro";
-                            }
-                        }
-                }
-        ?>
-
-        <?php 
-            if(isset($_POST['cadastrar_produto'])){
-
-                $name  = $_POST['produto'];
-                $preco = $_POST['preco'];
-                $qtd   = $_POST['qtd'];
+        $preco = str_replace(',', '.', $preco);
 
 
-                $check_sql = "SELECT id FROM tabela_produtos WHERE nome_produto = '$name'";
-                $busca = $banco->query($check_sql);
+        $sql = "SELECT qtd_estoque FROM tabela_produtos WHERE id = '$id'";
+        $res = $banco->query($sql);
+        $reg = $res->fetch_object();
 
-                if($qtd < 0){
-                    $toast_mensagem = "Erro: Não é possivel cadastrar um produto com quantidade negativa!";
-                    $toast_tipo = "erro"; 
-                }else{
-                    if($busca->num_rows > 0){
-                    $toast_mensagem = "Erro: Já existe um produto com este nome!";
-                    $toast_tipo = "erro"; 
-                } else {
-                    $q = "INSERT INTO tabela_produtos (nome_produto, vlr_unitario, qtd_estoque)
+        if ($qtd < $reg->qtd_estoque) {
+            $toast_mensagem = "Erro: A quantidade não pode ser menor que o estoque atual!";
+            $toast_tipo = "erro";
+        } else {
+            $sql = "UPDATE tabela_produtos SET nome_produto = '$name', vlr_unitario = '$preco', qtd_estoque = '$qtd' WHERE id = '$id'";
+            if ($banco->query($sql)) {
+                $toast_mensagem = "Produto atualizado com sucesso!";
+                $toast_tipo = "sucesso";
+            } else {
+                $toast_mensagem = "Erro ao atualizar no banco!";
+                $toast_tipo = "erro";
+            }
+        }
+    }
+    ?>
+
+    <?php
+    if (isset($_POST['cadastrar_produto'])) {
+
+        $name  = $_POST['produto'];
+        $preco = $_POST['preco'];
+        $qtd   = $_POST['qtd'];
+
+
+        $check_sql = "SELECT id FROM tabela_produtos WHERE nome_produto = '$name'";
+        $busca = $banco->query($check_sql);
+
+        if ($qtd < 0) {
+            $toast_mensagem = "Erro: Não é possivel cadastrar um produto com quantidade negativa!";
+            $toast_tipo = "erro";
+        } else {
+            if ($busca->num_rows > 0) {
+                $toast_mensagem = "Erro: Já existe um produto com este nome!";
+                $toast_tipo = "erro";
+            } else {
+                $q = "INSERT INTO tabela_produtos (nome_produto, vlr_unitario, qtd_estoque)
                         VALUES ('$name', '$preco', '$qtd')";
-                    
-                    if($banco->query($q)){
-                        $toast_mensagem = "Produto cadastrado com sucesso!";
-                        $toast_tipo = "sucesso";
-                    } else {
-                        $toast_mensagem = "Erro ao inserir no banco de dados.";
-                        $toast_tipo = "erro";
-                    }
-                }
+
+                if ($banco->query($q)) {
+                    $toast_mensagem = "Produto cadastrado com sucesso!";
+                    $toast_tipo = "sucesso";
+                } else {
+                    $toast_mensagem = "Erro ao inserir no banco de dados.";
+                    $toast_tipo = "erro";
                 }
             }
-        ?>
+        }
+    }
+    ?>
 
 
-        <div class="container py-5">
-            <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
-                <div>
-                    <h2 class="fw-bold mb-1" style="color: #0d6efd;">Produtos</h2>
-                    <p class="text-muted mb-0">Gerenciamento de produtos</p>
-                </div>
-                <button type="button" class="btn btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCadastrar_product">
-                <i class="fa-solid fa-plus me-2"></i>Cadastrar produto
-                </button>
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+            <div>
+                <h2 class="fw-bold mb-1" style="color: #0d6efd;">Produtos</h2>
+                <p class="text-muted mb-0">Gerenciamento de produtos</p>
             </div>
+            <button type="button" class="btn btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCadastrar_product">
+                <i class="fa-solid fa-plus me-2"></i>Cadastrar produto
+            </button>
+        </div>
 
         <div class="card border-0 rounded-4 overflow-hidden">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">                            
+                    <table class="table table-hover mb-0 align-middle">
                         <thead class="bg-light border-bottom">
                             <tr>
                                 <th class="ps-4 py-3 text-secondary border-0" style="width: 10%;">Qtd</th>
-                                
+
                                 <th class="py-3 text-secondary border-0" style="width: 20%;">Produto</th>
-                                
-                                <th class="py-3 text-secondary border-0 " >Preço R$</th>
-                                
+
+                                <th class="py-3 text-secondary border-0 ">Preço R$</th>
+
                                 <th class="pe-4 py-3 text-secondary text-end border-0">Ações</th>
                             </tr>
                         </thead>
-                            <tbody>
-                                <?php 
-                                $q = "SELECT * FROM tabela_produtos";
-                                $busca = $banco->query($q);
+                        <tbody>
+                            <?php
+                            $q = "SELECT * FROM tabela_produtos";
+                            $busca = $banco->query($q);
 
-                                if($busca->num_rows > 0){
-                                    while($reg = $busca->fetch_object()){
-                                       echo '<tr>
+                            if ($busca->num_rows > 0) {
+                                while ($reg = $busca->fetch_object()) {
+                                    echo '<tr>
                                             <td class="align-middle ps-4">
                                                 <span class="badge bg-light text-secondary px-1 py-4">
                                                     <i class="fa-solid fa-layer-group me-1"></i> ' . $reg->qtd_estoque . ' un.
@@ -162,17 +164,17 @@
                                                 </button>
                                             </td>
                                         </tr>';
-                                    }
-                                } else {
-                                    echo '<tr><td colspan="4" class="text-center p-3">Nenhum produto cadastrado.</td></tr>';
                                 }
+                            } else {
+                                echo '<tr><td colspan="4" class="text-center p-3">Nenhum produto cadastrado.</td></tr>';
+                            }
                             ?>
-                            </tbody>
-                        </table>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+    </div>
 
 
     <div class="modal fade" id="modalEditar_product" tabindex="-1" aria-hidden="true">
@@ -246,10 +248,11 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 </body>
+
 </html>
 
 <script>
-    function carregarDados(botao){
+    function carregarDados(botao) {
         var id = botao.getAttribute('data-id');
         var produto = botao.getAttribute('data-produto');
         var qtd = botao.getAttribute('data-qtd');
@@ -260,30 +263,28 @@
         document.getElementById('qtd_edit').value = qtd;
         document.getElementById('preco_edit').value = preco;
     }
-
-
 </script>
 
 
 <script>
-        var mensagem = "<?php echo $toast_mensagem; ?>";
-        var tipo = "<?php echo $toast_tipo; ?>";
+    var mensagem = "<?php echo $toast_mensagem; ?>";
+    var tipo = "<?php echo $toast_tipo; ?>";
 
-        if (mensagem) {
-            var corFundo = tipo === "sucesso" 
-                ? "linear-gradient(to right, #00b09b, #2cabd1ff)" 
-                : "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+    if (mensagem) {
+        var corFundo = tipo === "sucesso" ?
+            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
+            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
 
-            Toastify({
-                text: mensagem,
-                duration: 3000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                stopOnFocus: true,
-                style: {
-                    background: corFundo,
-                }
-            }).showToast();
-        }
-    </script>
+        Toastify({
+            text: mensagem,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            stopOnFocus: true,
+            style: {
+                background: corFundo,
+            }
+        }).showToast();
+    }
+</script>

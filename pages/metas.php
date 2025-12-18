@@ -8,107 +8,107 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
 
 <?php
-    session_start();
+session_start();
 
-    if (!isset($_SESSION['usuario'])) {
-        header('location:login.php');
-        exit();
-    }
+if (!isset($_SESSION['usuario'])) {
+    header('location:../login/login.php');
+    exit();
+}
 
-    require_once "config/banco.php";
-    require "header.php";
+require_once "../config/banco.php";
+require "../includes/header.php";
 
-    $toast_mensagem = "";
-    $toast_tipo = "";
+$toast_mensagem = "";
+$toast_tipo = "";
 
 ?>
 
 
-<?php 
+<?php
 
-    if (isset($_POST['cadastrar_meta'])) {
+if (isset($_POST['cadastrar_meta'])) {
 
-        $func  = $_POST['funcionario'];
-        $mes   = $_POST['mes'];
-        $valor = $_POST['meta'];
+    $func  = $_POST['funcionario'];
+    $mes   = $_POST['mes'];
+    $valor = $_POST['meta'];
 
 
-        $mes_banco = $mes . "-01";
+    $mes_banco = $mes . "-01";
 
-        $valor = str_replace('.', '', $valor);
-        
-        $valor = str_replace(',', '.', $valor);
-        $data_atual = date('Y-m-01');
+    $valor = str_replace('.', '', $valor);
 
-        $busca = "SELECT id FROM tabela_metas WHERE funcionario_meta = '$func' AND mes_meta = '$mes_banco'";
-        $check = $banco->query($busca);
+    $valor = str_replace(',', '.', $valor);
+    $data_atual = date('Y-m-01');
 
-        if (empty($func)) {
-            $toast_mensagem = "Erro: Selecione um funcionário!";
-            $toast_tipo = "error";
-        } elseif ($mes_banco < $data_atual) {
-            $toast_mensagem = "Erro: Não é possível definir metas para meses passados!";
-            $toast_tipo = "error";
-        } elseif ($valor < 0) {
-            $toast_mensagem = "Erro: O valor da meta não pode ser negativo!";
-            $toast_tipo = "error";
-        } elseif ($check->num_rows > 0) {
-            $toast_mensagem = "Erro: Este funcionário JÁ possui uma meta para este mês!";
-            $toast_tipo = "error";
-        } else {
-            $q = "INSERT INTO tabela_metas (funcionario_meta, mes_meta, vlr_meta) 
+    $busca = "SELECT id FROM tabela_metas WHERE funcionario_meta = '$func' AND mes_meta = '$mes_banco'";
+    $check = $banco->query($busca);
+
+    if (empty($func)) {
+        $toast_mensagem = "Erro: Selecione um funcionário!";
+        $toast_tipo = "error";
+    } elseif ($mes_banco < $data_atual) {
+        $toast_mensagem = "Erro: Não é possível definir metas para meses passados!";
+        $toast_tipo = "error";
+    } elseif ($valor < 0) {
+        $toast_mensagem = "Erro: O valor da meta não pode ser negativo!";
+        $toast_tipo = "error";
+    } elseif ($check->num_rows > 0) {
+        $toast_mensagem = "Erro: Este funcionário JÁ possui uma meta para este mês!";
+        $toast_tipo = "error";
+    } else {
+        $q = "INSERT INTO tabela_metas (funcionario_meta, mes_meta, vlr_meta) 
                 VALUES ('$func', '$mes_banco', '$valor')";
 
-            if ($banco->query($q)) {
-                $toast_mensagem = "Meta definida com sucesso!";
-                $toast_tipo = "success";
-            } else {
-                $toast_mensagem = "Erro ao salvar no banco de dados.";
-                $toast_tipo = "error";
-            }
+        if ($banco->query($q)) {
+            $toast_mensagem = "Meta definida com sucesso!";
+            $toast_tipo = "success";
+        } else {
+            $toast_mensagem = "Erro ao salvar no banco de dados.";
+            $toast_tipo = "error";
         }
     }
+}
 
 ?>
 
 
-<?php 
-    if (isset($_GET['id'])) {
-        $id = intval($_GET['id']);
+<?php
+if (isset($_GET['id'])) {
+    $id = intval($_GET['id']);
 
-        if ($banco->query("DELETE FROM tabela_metas WHERE id = '$id'")) {
-            $toast_mensagem = "Meta deletada com sucesso!";
-            $toast_tipo = "success";
-        } else {
-            $toast_mensagem = "Erro ao deletar: " . $banco->error;
-            $toast_tipo = "error";
-        }
+    if ($banco->query("DELETE FROM tabela_metas WHERE id = '$id'")) {
+        $toast_mensagem = "Meta deletada com sucesso!";
+        $toast_tipo = "success";
+    } else {
+        $toast_mensagem = "Erro ao deletar: " . $banco->error;
+        $toast_tipo = "error";
     }
+}
 ?>
 
 
-<?php 
-    if(isset($_POST['editar_meta'])){
-        $id = $_POST['id'];
-        $vlr = $_POST['vlr'];
+<?php
+if (isset($_POST['editar_meta'])) {
+    $id = $_POST['id'];
+    $vlr = $_POST['vlr'];
 
-        $vlr = str_replace('.', '', $vlr);
-        $vlr = str_replace(',', '.', $vlr);
+    $vlr = str_replace('.', '', $vlr);
+    $vlr = str_replace(',', '.', $vlr);
 
-        $q = "UPDATE tabela_metas SET vlr_meta = '$vlr' WHERE id = '$id'";
+    $q = "UPDATE tabela_metas SET vlr_meta = '$vlr' WHERE id = '$id'";
 
-        if($banco->query($q)){
-            $toast_mensagem = "Meta atualizada com sucesso!";
-            $toast_tipo = "success";
-        } else {
-            $toast_mensagem = "Erro ao atualizar";
-            $toast_tipo = "error";
-        }
+    if ($banco->query($q)) {
+        $toast_mensagem = "Meta atualizada com sucesso!";
+        $toast_tipo = "success";
+    } else {
+        $toast_mensagem = "Erro ao atualizar";
+        $toast_tipo = "error";
     }
+}
 ?>
 
 
@@ -214,13 +214,13 @@
                             <select class="form-select form-select-sm bg-light" id="id_funcionario" name="funcionario" required>
                                 <option value="" selected disabled>Selecione...</option>
                                 <?php
-                                    $q = "SELECT * FROM tabela_funcionarios WHERE data_demissao IS NULL";
-                                    $busca = $banco->query($q);
-                                    if ($busca->num_rows > 0) {
-                                        while ($reg = $busca->fetch_object()) {
-                                            echo "<option value='$reg->id'>$reg->nome</option>";
-                                        }
+                                $q = "SELECT * FROM tabela_funcionarios WHERE data_demissao IS NULL";
+                                $busca = $banco->query($q);
+                                if ($busca->num_rows > 0) {
+                                    while ($reg = $busca->fetch_object()) {
+                                        echo "<option value='$reg->id'>$reg->nome</option>";
                                     }
+                                }
                                 ?>
                             </select>
                         </div>
@@ -278,7 +278,7 @@
 
     <script>
         function carregarDados(botao) {
-            
+
             var id = botao.getAttribute('data-id');
             var vlr = botao.getAttribute('data-valor');
 
