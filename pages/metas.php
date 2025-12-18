@@ -11,21 +11,33 @@
     <link rel="stylesheet" href="../assets/style.css">
 </head>
 
+
+
+
 <?php
-session_start();
 
-if (!isset($_SESSION['usuario'])) {
-    header('location:../login/login.php');
-    exit();
-}
+    session_start();
 
-require_once "../config/banco.php";
-require "../includes/header.php";
+    if (!isset($_SESSION['usuario'])) {
+        header('location:../login/login.php');
+        exit();
+    }
 
-$toast_mensagem = "";
-$toast_tipo = "";
+    require_once "../config/banco.php";
+    require "../includes/header.php";
+
+    $toast_mensagem = "";
+    $toast_tipo = "";
 
 ?>
+
+
+
+
+
+
+
+<!-- Lógica de cadastar metas -->
 
 
 <?php
@@ -76,6 +88,15 @@ if (isset($_POST['cadastrar_meta'])) {
 ?>
 
 
+
+
+
+
+
+
+<!-- Lógica de deletar metas -->
+
+
 <?php
 if (isset($_GET['id'])) {
     $id = intval($_GET['id']);
@@ -89,6 +110,13 @@ if (isset($_GET['id'])) {
     }
 }
 ?>
+
+
+
+
+
+
+<!-- Lógica de editar metas -->
 
 
 <?php
@@ -112,6 +140,12 @@ if (isset($_POST['editar_meta'])) {
 ?>
 
 
+
+
+
+<!-- Caixa de cadastar metas -->
+
+
 <body>
 
     <div class="container py-5">
@@ -124,6 +158,8 @@ if (isset($_POST['editar_meta'])) {
                 <i class="fa-solid fa-plus me-2"></i>Definir meta
             </button>
         </div>
+
+
 
         <div class="card border-0 rounded-4 overflow-hidden">
             <div class="card-body p-0">
@@ -138,12 +174,20 @@ if (isset($_POST['editar_meta'])) {
                             </tr>
                         </thead>
                         <tbody>
+
+                            <!-- Lógica de capturar o nome do funcionário pelo ID utilizando INNER JOIN -->
+
+
                             <?php
                             $q = "SELECT tabela_metas.*, tabela_funcionarios.nome 
                                 FROM tabela_metas 
                                 INNER JOIN tabela_funcionarios 
-                                ON tabela_metas.funcionario_meta = tabela_funcionarios.id";
+                                ON tabela_metas.funcionario_meta = tabela_funcionarios.id ORDER BY mes_meta DESC";
                             $busca = $banco->query($q);
+
+
+
+                           // Lógica de listar todas as metas
 
                             if ($busca->num_rows > 0) {
                                 while ($reg = $busca->fetch_object()) {
@@ -199,6 +243,12 @@ if (isset($_POST['editar_meta'])) {
         </div>
     </div>
 
+
+
+
+
+    <!-- Modal de cadastrar metas -->
+
     <div class="modal fade" id="modalCadastrar_meta" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -206,8 +256,13 @@ if (isset($_POST['editar_meta'])) {
                     <h5 class="modal-title fw-bold">Definir Nova Meta</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+
+
+
                 <div class="modal-body py-4 px-4">
                     <form method="post">
+
+
 
                         <div class="mb-3 text-start">
                             <label class="form-label text-muted small fw-bold" for="id_funcionario">FUNCIONÁRIO</label>
@@ -225,27 +280,36 @@ if (isset($_POST['editar_meta'])) {
                             </select>
                         </div>
 
+
+
                         <div class="mb-3 text-start">
                             <label class="form-label text-muted small fw-bold" for="mes_meta">MÊS </label>
                             <input type="month" class="form-control bg-light" id="mes_meta" name="mes" required>
                         </div>
+
 
                         <div class="mb-3 text-start">
                             <label class="form-label text-muted small fw-bold" for="vlr_meta">VALOR DA META (R$)</label>
                             <input type="text" class="form-control bg-light" id="vlr_meta" name="meta" placeholder="0,00" required>
                         </div>
 
+
                         <div class="modal-footer border-top-0 justify-content-center">
                             <button type="submit" name="cadastrar_meta" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
                                 Salvar Meta
                             </button>
                         </div>
+
+
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
+
+
+    <!-- Modal de editar metas -->
 
 
     <div class="modal fade" id="modalEditar_meta" tabindex="-1" aria-hidden="true">
@@ -257,6 +321,7 @@ if (isset($_POST['editar_meta'])) {
                 </div>
                 <div class="modal-body py-4 px-4">
                     <form method="post">
+                        
                         <input type="hidden" name="id" id="id_edit">
 
                         <div class="mb-3 text-start">
@@ -264,52 +329,70 @@ if (isset($_POST['editar_meta'])) {
                             <input type="number" step="0.01" class="form-control bg-light" id="vlr_edit" name="vlr" required>
                         </div>
 
+
+
                         <div class="modal-footer border-top-0 justify-content-center">
                             <button type="submit" name="editar_meta" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Salvar Alterações</button>
                         </div>
+
+
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
+
+
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-    <script>
-        function carregarDados(botao) {
 
-            var id = botao.getAttribute('data-id');
-            var vlr = botao.getAttribute('data-valor');
-
-            document.getElementById('id_edit').value = id;
-            document.getElementById('vlr_edit').value = vlr;
-
-        }
-    </script>
-
-    <script>
-        var mensagem = "<?php echo $toast_mensagem; ?>";
-        var tipo = "<?php echo $toast_tipo; ?>";
-
-        if (mensagem) {
-            var corFundo = tipo === "success" ?
-                "linear-gradient(to right, #00b09b, #2cabd1ff)" :
-                "linear-gradient(to right, #ff5f6d, #e562f7ff)";
-
-            Toastify({
-                text: mensagem,
-                duration: 3000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                stopOnFocus: true,
-                style: {
-                    background: corFundo,
-                }
-            }).showToast();
-        }
-    </script>
 </body>
 
 </html>
+
+
+
+
+
+<script>
+    function carregarDados(botao) {
+
+        var id = botao.getAttribute('data-id');
+        var vlr = botao.getAttribute('data-valor');
+
+        document.getElementById('id_edit').value = id;
+        document.getElementById('vlr_edit').value = vlr;
+
+    }
+</script>
+
+
+
+
+
+<script>
+    var mensagem = "<?php echo $toast_mensagem; ?>";
+    var tipo = "<?php echo $toast_tipo; ?>";
+
+    if (mensagem) {
+        var corFundo = tipo === "success" ?
+            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
+            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+
+        Toastify({
+            text: mensagem,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            stopOnFocus: true,
+            style: {
+                background: corFundo,
+            }
+        }).showToast();
+    }
+</script>

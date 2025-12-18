@@ -182,7 +182,7 @@
                         <!-- Lógica de listar funcionarios -->
 
                         <?php
-                        $q = "SELECT * FROM tabela_funcionarios";
+                        $q = "SELECT * FROM tabela_funcionarios ORDER BY nome";
                         $busca = $banco->query($q);
 
                         if ($busca->num_rows > 0) {

@@ -26,11 +26,13 @@ $pass = $_POST['senha'] ?? null;
 
 
 if (!is_null($user) && !is_null($pass)) {
-    $val = "SELECT usuario, senha FROM tabela_usuarios WHERE usuario='$user' ";
+    $q = "SELECT usuario, senha FROM tabela_usuarios WHERE usuario='$user' ";
     $busca = $banco->query($val);
 
     if ($busca->num_rows > 0) {
+
         $reg = $busca->fetch_object();
+        
         if (testarHash($pass, $reg->senha)) {
             $_SESSION['usuario'] = $reg->usuario;
             $toast_mensagem = "Bem vindo novamente " . $user;

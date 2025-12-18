@@ -14,20 +14,25 @@
 <body>
 
     <?php
-    session_start();
-    if (!isset($_SESSION['usuario'])) {
-        header('location:../login/login.php');
-        exit();
-    }
 
-    require_once "../config/banco.php";
-    require_once "../config/function.php";
-    require "../includes/header.php";
+        session_start();
+        if (!isset($_SESSION['usuario'])) {
+            header('location:../login/login.php');
+            exit();
+        }
 
-    $toast_mensagem = "";
-    $toast_tipo = "";
+        require_once "../config/banco.php";
+        require_once "../config/function.php";
+        require "../includes/header.php";
+
+        $toast_mensagem = "";
+        $toast_tipo = "";
+        
     ?>
 
+
+
+    <!-- Lógica de editar produtos -->
 
 
     <?php
@@ -60,6 +65,11 @@
         }
     }
     ?>
+
+
+
+
+    <!-- Lógica de cadastrar produtos -->
 
     <?php
     if (isset($_POST['cadastrar_produto'])) {
@@ -96,7 +106,15 @@
     ?>
 
 
+
+
+
+    <!-- Caixa de listar produtos -->
+
+
     <div class="container py-5">
+
+
         <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
             <div>
                 <h2 class="fw-bold mb-1" style="color: #0d6efd;">Produtos</h2>
@@ -106,6 +124,8 @@
                 <i class="fa-solid fa-plus me-2"></i>Cadastrar produto
             </button>
         </div>
+
+
 
         <div class="card border-0 rounded-4 overflow-hidden">
             <div class="card-body p-0">
@@ -123,8 +143,15 @@
                             </tr>
                         </thead>
                         <tbody>
+
+
+
+                            <!-- Lógica de listar produtos -->
+
+
+
                             <?php
-                            $q = "SELECT * FROM tabela_produtos";
+                            $q = "SELECT * FROM tabela_produtos ORDER BY nome_produto";
                             $busca = $banco->query($q);
 
                             if ($busca->num_rows > 0) {
@@ -168,6 +195,10 @@
                             } else {
                                 echo '<tr><td colspan="4" class="text-center p-3">Nenhum produto cadastrado.</td></tr>';
                             }
+
+
+
+                             
                             ?>
                         </tbody>
                     </table>
@@ -175,6 +206,12 @@
             </div>
         </div>
     </div>
+
+
+
+
+
+    <!-- Modal de editar produtos -->
 
 
     <div class="modal fade" id="modalEditar_product" tabindex="-1" aria-hidden="true">
@@ -208,6 +245,15 @@
             </div>
         </div>
     </div>
+
+
+
+
+
+
+
+
+    <!-- Modal de cadastrar produtos -->
 
 
     <div class="modal fade" id="modalCadastrar_product" tabindex="-1" aria-hidden="true">
@@ -244,12 +290,21 @@
 
 
 
+
+
+
+
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 </body>
 
 </html>
+
+
+
 
 <script>
     function carregarDados(botao) {
@@ -264,6 +319,9 @@
         document.getElementById('preco_edit').value = preco;
     }
 </script>
+
+
+
 
 
 <script>
