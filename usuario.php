@@ -188,7 +188,6 @@
                                                 class="btn btn-sm btn-outline-danger rounded-pill" 
                                                 value="Excluir" 
                                                 onclick="window.location.href=\'usuario.php?id=' . $reg->id . '\'">
-
                                         </td>
 
 

@@ -323,7 +323,7 @@
                         <input type="hidden" name="id_edit" id="id_edit">
 
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold">NOME COMPLETO</label>
+                            <label for="funcionario_edit" class="form-label text-muted small fw-bold">NOME COMPLETO</label>
                             <input type="text" class="form-control bg-light" id="funcionario_edit" name="nome_edit" required>
                         </div>
 
@@ -439,7 +439,7 @@
                         </div>
 
                         <div class="mb-3 text-start">
-                            <label for="nome" class="form-label text-muted small fw-bold">NOME COMPLETO</label>
+                            <label for="name" class="form-label text-muted small fw-bold">NOME COMPLETO</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0 text-primary">
                                     <i class="fa-solid fa-user"></i>

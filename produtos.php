@@ -36,6 +36,8 @@
                     $preco = $_POST['preco'];
                     $qtd   = $_POST['qtd'];
 
+                    $preco = str_replace(',', '.', $preco);
+
                     
                     $sql = "SELECT qtd_estoque FROM tabela_produtos WHERE id = '$id'";
                     $res = $banco->query($sql);
@@ -127,7 +129,7 @@
                                     while($reg = $busca->fetch_object()){
                                        echo '<tr>
                                             <td class="align-middle ps-4">
-                                                <span class="badge bg-light text-secondary border rounded-pill px-1 py-4">
+                                                <span class="badge bg-light text-secondary px-1 py-4">
                                                     <i class="fa-solid fa-layer-group me-1"></i> ' . $reg->qtd_estoque . ' un.
                                                 </span>
                                             </td>
@@ -135,7 +137,7 @@
                                             <td class="align-middle">
                                                 <div class="d-flex align-items-center"> 
                                                     <div class="ms-3">
-                                                        <span class="d-block fw-bold text-dark">' . $reg->nome_produto . '</span>
+                                                        <span class="d-block fw-semibold text-dark">' . $reg->nome_produto . '</span>
                                                     </div>
                                                 </div>
                                             </td>
@@ -206,7 +208,7 @@
     </div>
 
 
-        <div class="modal fade" id="modalCadastrar_product" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="modalCadastrar_product" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-bottom-0">
@@ -218,16 +220,16 @@
                         <input type="hidden" name="id" id="id_edit">
 
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold">NOME DO PRODUTO</label>
-                            <input type="text" class="form-control bg-light" id="produto_edit" name="produto" required>
+                            <label class="form-label text-muted small fw-bold" for="produto_edit">NOME DO PRODUTO</label>
+                            <input placeholder="Digite o nome do produto" type="text" class="form-control bg-light" id="produto_edit" name="produto" required>
                         </div>
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold">PREÇO UNITÁRIO</label>
-                            <input type="number" step="0.01" class="form-control bg-light" id="preco_edit" name="preco" required>
+                            <label class="form-label text-muted small fw-bold" for="preco_edit">PREÇO UNITÁRIO</label>
+                            <input placeholder="Digite o valor" type="number" step="0.01" class="form-control bg-light" id="preco_edit" name="preco" required>
                         </div>
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold">QUANTIDADE</label>
-                            <input type="number" class="form-control bg-light" id="qtd_edit" name="qtd" required>
+                            <label class="form-label text-muted small fw-bold" for="qtd_edit">QUANTIDADE</label>
+                            <input placeholder="Quantidade em estoque" type="number" class="form-control bg-light" id="qtd_edit" name="qtd" required>
                         </div>
                         <div class="modal-footer border-top-0 justify-content-center">
                             <button type="submit" name="cadastrar_produto" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Salvar Alterações</button>
