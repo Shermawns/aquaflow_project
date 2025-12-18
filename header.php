@@ -19,7 +19,7 @@
                         <a class="nav-link" href="produtos.php">Produtos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Metas</a>
+                        <a class="nav-link" href="metas.php">Metas</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Vendas</a>
