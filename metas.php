@@ -91,6 +91,27 @@
 ?>
 
 
+<?php 
+    if(isset($_POST['editar_meta'])){
+        $id = $_POST['id'];
+        $vlr = $_POST['vlr'];
+
+        $vlr = str_replace('.', '', $vlr);
+        $vlr = str_replace(',', '.', $vlr);
+
+        $q = "UPDATE tabela_metas SET vlr_meta = '$vlr' WHERE id = '$id'";
+
+        if($banco->query($q)){
+            $toast_mensagem = "Meta atualizada com sucesso!";
+            $toast_tipo = "success";
+        } else {
+            $toast_mensagem = "Erro ao atualizar";
+            $toast_tipo = "error";
+        }
+    }
+?>
+
+
 <body>
 
     <div class="container py-5">
@@ -154,8 +175,6 @@
                                                     data-bs-toggle="modal" 
                                                     data-bs-target="#modalEditar_meta"
                                                     data-id="' . $reg->id . '"
-                                                    data-funcionario="' . $reg->funcionario_meta . '"
-                                                    data-mes="' . $reg->mes_meta . '"
                                                     data-valor="' . $reg->vlr_meta . '"
                                                     onclick="carregarDados(this)">
                                                     Editar
@@ -195,13 +214,13 @@
                             <select class="form-select form-select-sm bg-light" id="id_funcionario" name="funcionario" required>
                                 <option value="" selected disabled>Selecione...</option>
                                 <?php
-                                $q = "SELECT * FROM tabela_funcionarios WHERE data_demissao IS NULL";
-                                $busca = $banco->query($q);
-                                if ($busca->num_rows > 0) {
-                                    while ($reg = $busca->fetch_object()) {
-                                        echo "<option value='$reg->id'>$reg->nome</option>";
+                                    $q = "SELECT * FROM tabela_funcionarios WHERE data_demissao IS NULL";
+                                    $busca = $banco->query($q);
+                                    if ($busca->num_rows > 0) {
+                                        while ($reg = $busca->fetch_object()) {
+                                            echo "<option value='$reg->id'>$reg->nome</option>";
+                                        }
                                     }
-                                }
                                 ?>
                             </select>
                         </div>
@@ -227,6 +246,33 @@
         </div>
     </div>
 
+
+
+    <div class="modal fade" id="modalEditar_meta" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Editar meta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4 px-4">
+                    <form method="post">
+                        <input type="hidden" name="id" id="id_edit">
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label text-muted small fw-bold">VALOR DA META</label>
+                            <input type="number" step="0.01" class="form-control bg-light" id="vlr_edit" name="vlr" required>
+                        </div>
+
+                        <div class="modal-footer border-top-0 justify-content-center">
+                            <button type="submit" name="editar_meta" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
@@ -234,9 +280,10 @@
         function carregarDados(botao) {
             
             var id = botao.getAttribute('data-id');
-            var func = botao.getAttribute('data-funcionario');
-            var mes = botao.getAttribute('data-mes');
             var vlr = botao.getAttribute('data-valor');
+
+            document.getElementById('id_edit').value = id;
+            document.getElementById('vlr_edit').value = vlr;
 
         }
     </script>
