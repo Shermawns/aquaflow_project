@@ -28,34 +28,43 @@
 
 
     
-        <?php 
-            if(isset($_POST['editar_produto'])){
+            <?php 
+                if(isset($_POST['cadastrar_produto'])){
 
-                    $id    = $_POST['id'];
                     $name  = $_POST['produto'];
                     $preco = $_POST['preco'];
                     $qtd   = $_POST['qtd'];
 
-                    
-                    $sql = "SELECT qtd_estoque FROM tabela_produtos WHERE id = '$id'";
-                    $res = $banco->query($sql);
-                    $reg = $res->fetch_object();
+                    $preco = str_replace(',', '.', $preco);
 
-                    if($qtd < $reg->qtd_estoque){
-                        $toast_mensagem = "Erro: A quantidade não pode ser menor que o estoque atual!";
+                    $check_sql = "SELECT id FROM tabela_produtos WHERE nome_produto = '$name'";
+                    $busca = $banco->query($check_sql);
+
+                    if($qtd < 0){
+                        $toast_mensagem = "Erro: Não é possivel cadastrar um produto com quantidade negativa!";
                         $toast_tipo = "erro"; 
+                    } elseif($preco < 0) {
+                        $toast_mensagem = "Erro: O preço não pode ser negativo!";
+                        $toast_tipo = "erro";
                     } else {
-                        $sql = "UPDATE tabela_produtos SET nome_produto = '$name', vlr_unitario = '$preco', qtd_estoque = '$qtd' WHERE id = '$id'";
-                            if($banco->query($sql)){
-                                $toast_mensagem = "Produto atualizado com sucesso!";
+                        if($busca->num_rows > 0){
+                            $toast_mensagem = "Erro: Já existe um produto com este nome!";
+                            $toast_tipo = "erro"; 
+                        } else {
+                            $q = "INSERT INTO tabela_produtos (nome_produto, vlr_unitario, qtd_estoque)
+                                VALUES ('$name', '$preco', '$qtd')";
+                            
+                            if($banco->query($q)){
+                                $toast_mensagem = "Produto cadastrado com sucesso!";
                                 $toast_tipo = "sucesso";
                             } else {
-                                $toast_mensagem = "Erro ao atualizar no banco!";
+                                $toast_mensagem = "Erro ao inserir no banco de dados.";
                                 $toast_tipo = "erro";
                             }
                         }
+                    }
                 }
-        ?>
+            ?>
 
         <?php 
             if(isset($_POST['cadastrar_produto'])){
@@ -107,49 +116,54 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0 align-middle">                            
-                            <thead class="bg-light border-bottom">
-                                <tr>
-                                    <th class="ps-4 py-3 text-secondary border-0">Produtos</th>
-                                    <th class="pe-4 py-3 text-secondary text-end border-0">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody> <?php 
+                        <thead class="bg-light border-bottom">
+                            <tr>
+                                <th class="ps-4 py-3 text-secondary border-0" style="width: 10%;">Qtd.</th>
+                                
+                                <th class="py-3 text-secondary border-0" style="width: 10%;">Produto</th>
+                                
+                                <th class="py-3 text-secondary border-0 " >Preço</th>
+                                
+                                <th class="pe-4 py-3 text-secondary text-end border-0">Ações</th>
+                            </tr>
+                        </thead>
+                            <tbody>
+                                <?php 
                                 $q = "SELECT * FROM tabela_produtos";
                                 $busca = $banco->query($q);
 
                                 if($busca->num_rows > 0){
                                     while($reg = $busca->fetch_object()){
                                         echo '<tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="m-3">
-                                                    <h6 class="m-0 fw-semibold"> x' . $reg->qtd_estoque . '</h6>
-                                                </div>
-                                                <div>
-                                                    <h6 class="m-3 fw-semibold">' . $reg->nome_produto . '</h6>
-                                                </div>
-                                                <div>
-                                                <h6 class="m-3 fw-semibold">R$' . $reg->vlr_unitario . '</h6>
-                                                </div>
-                                            </div>
-                                        </td> 
-                                        <td class="pe-4 text-end">
-                                            <input type="button" 
-                                                class="btn btn-sm btn-outline-primary rounded-pill me-1" 
-                                                value="Editar" 
-                                                title="Editar" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#modalEditar_product"
-                                                data-id="' . $reg->id . '"
-                                                data-qtd="' . $reg->qtd_estoque . '"
-                                                data-produto="' . $reg->nome_produto . '"
-                                                data-preco="' . $reg->vlr_unitario . '"
-                                                onclick="carregarDados(this)">
-                                        </td>
-                                        </tr>';
+                                                <td class="align-middle text-muted p-4" style="width: 80px;">
+                                                    x' . $reg->qtd_estoque . '
+                                                </td>
+
+                                                <td class="align-middle fw-semibold">
+                                                    ' . $reg->nome_produto . '
+                                                </td>
+
+                                                <td class="align-middle">
+                                                    R$ ' . $reg->vlr_unitario . '
+                                                </td>
+
+                                                <td class="align-middle text-end pe-4">
+                                                    <input type="button" 
+                                                        class="btn btn-sm btn-outline-primary rounded-pill" 
+                                                        value="Editar" 
+                                                        title="Editar" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#modalEditar_product"
+                                                        data-id="' . $reg->id . '"
+                                                        data-qtd="' . $reg->qtd_estoque . '"
+                                                        data-produto="' . $reg->nome_produto . '"
+                                                        data-preco="' . $reg->vlr_unitario . '"
+                                                        onclick="carregarDados(this)">
+                                                </td>
+                                            </tr>';
                                     }
                                 } else {
-                                    echo '<tr><td colspan="2" class="text-center">Nenhum produto cadastrado. </td></tr>';
+                                    echo '<tr><td colspan="4" class="text-center p-3">Nenhum produto cadastrado.</td></tr>';
                                 }
                             ?>
                             </tbody>
