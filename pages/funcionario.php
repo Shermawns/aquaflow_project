@@ -295,6 +295,7 @@
                         <label class="form-label text-muted small fw-bold">DATA DE CONTRATAÇÃO</label>
                         <input type="text" class="form-control bg-light" id="visualizar_contratacao" readonly>
                     </div>
+                    
                 </div>
             </div>
         </div>

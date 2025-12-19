@@ -24,6 +24,36 @@
     $toast_tipo = "";
 ?>
 
+
+<?php
+    if (isset($_POST['registrar_venda'])) {
+        $id_func = $_POST['funcionario'];
+        $data    = $_POST['data_venda'];
+        $id_prod = $_POST['produto_id'];
+        $qtd     = $_POST['qtd_produto'];
+
+        $busca = $banco->query("SELECT qtd_estoque, nome_produto FROM tabela_produtos WHERE id = '$id_prod'");
+        $produto = $busca->fetch_object();
+
+        if ($qtd > $produto->qtd_estoque) {
+            $toast_mensagem = "Erro: Estoque insuficiente! Disponível: " . $produto->qtd_estoque;
+            $toast_tipo = "erro";
+        } else {
+            $banco->query("INSERT INTO tabela_vendas (funcionario_vendas, data_venda) VALUES ('$id_func', '$data')");
+            $id_venda = $banco->insert_id;
+
+            $banco->query("INSERT INTO tabela_vendas_produtos (id_venda, id_produto, qtd_vendido) VALUES ('$id_venda', '$id_prod', '$qtd')");
+
+            $banco->query("UPDATE tabela_produtos SET qtd_estoque = qtd_estoque - '$qtd' WHERE id = '$id_prod'");
+
+            $toast_mensagem = "Venda registrada com sucesso!";
+            $toast_tipo = "sucesso";
+        }
+    }
+    ?>
+
+
+
 <body>
 
     <div class="container py-5">
@@ -61,7 +91,7 @@
                                     INNER JOIN tabela_funcionarios ON tabela_vendas.funcionario_vendas = tabela_funcionarios.id
                                     INNER JOIN tabela_vendas_produtos ON tabela_vendas.id = tabela_vendas_produtos.id_venda
                                     INNER JOIN tabela_produtos ON tabela_vendas_produtos.id_produto = tabela_produtos.id
-                                    ORDER BY tabela_vendas.data_venda DESC";
+                                    ORDER BY tabela_vendas_produtos.qtd_vendido DESC";
 
                                 $busca = $banco->query($q);
 
@@ -109,6 +139,73 @@
     </div>
 
 
+       <div class="modal fade" id="modalCadastrar_venda" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Registrar Venda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body py-4 px-4">
+                    <form method="post">
+                        
+                        <div class="mb-3 text-start">
+                            <label for="func_venda" class="form-label text-muted small fw-bold">FUNCIONÁRIO</label>
+                            <div class="input-group">
+                                <select class="form-select bg-light border-start-0 ps-0" id="func_venda" name="funcionario" required>
+                                    <option value="" selected disabled>Selecione...</option>
+                                    <?php
+                                        $q = "SELECT * FROM tabela_funcionarios WHERE data_demissao IS NULL ORDER BY nome";
+                                        $busca = $banco->query($q);
+                                        while ($reg = $busca->fetch_object()) {
+                                            echo "<option value='$reg->id'>$reg->nome</option>";
+                                        }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label for="data_venda" class="form-label text-muted small fw-bold">DATA DA VENDA</label>
+                            <div class="input-group">
+                                <input type="date" class="form-control bg-light border-start-0 ps-0" id="data_venda" name="data_venda" value="<?php echo date('Y-m-d'); ?>" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label for="prod_venda" class="form-label text-muted small fw-bold">PRODUTO</label>
+                            <div class="input-group">
+                                <select class="form-select bg-light border-start-0 ps-0" id="prod_venda" name="produto_id" required>
+                                    <option value="" selected disabled>Selecione...</option>
+                                    <?php
+                                    $q = "SELECT * FROM tabela_produtos WHERE qtd_estoque > 0 ORDER BY nome_produto";
+                                    $busca = $banco->query($q);
+                                    while ($reg = $busca->fetch_object()) {
+                                        echo "<option value='$reg->id'>$reg->nome_produto (Estoque: $reg->qtd_estoque)</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label for="qtd_venda" class="form-label text-muted small fw-bold">QUANTIDADE</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control bg-light border-start-0 ps-0" id="qtd_venda" name="qtd_produto" min="1" placeholder="Digite a quantidade" required>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer border-top-0 justify-content-center">
+                            <button type="submit" name="registrar_venda" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Registrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 
 
     
@@ -117,3 +214,26 @@
     
 </body>
 </html>
+
+<script>
+    var mensagem = "<?php echo $toast_mensagem; ?>";
+    var tipo = "<?php echo $toast_tipo; ?>";
+
+    if (mensagem) {
+        var corFundo = tipo === "sucesso" ?
+            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
+            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+
+        Toastify({
+            text: mensagem,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            stopOnFocus: true,
+            style: {
+                background: corFundo,
+            }
+        }).showToast();
+    }
+</script>
