@@ -473,23 +473,6 @@
 </html>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var alerta = document.getElementById('msgErro');
-
-        if (alerta) {
-            setTimeout(function() {
-                alerta.style.transition = "opacity 0.5s ease";
-                alerta.style.opacity = "0";
-                setTimeout(function() {
-                    alerta.remove();
-                }, 500);
-            }, 3000);
-        }
-    });
-
-
-
-
 
 
 

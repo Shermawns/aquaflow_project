@@ -27,7 +27,7 @@
 
         $toast_mensagem = "";
         $toast_tipo = "";
-        
+
     ?>
 
 
@@ -273,7 +273,7 @@
                         </div>
                         <div class="mb-3 text-start">
                             <label class="form-label text-muted small fw-bold" for="preco_edit">PREÇO UNITÁRIO</label>
-                            <input placeholder="Digite o valor" type="number" step="0.01" class="form-control bg-light" id="preco_edit" name="preco" required>
+                            <input placeholder="0,00" type="number" step="0.01" class="form-control bg-light" id="preco_edit" name="preco" required>
                         </div>
                         <div class="mb-3 text-start">
                             <label class="form-label text-muted small fw-bold" for="qtd_edit">QUANTIDADE</label>

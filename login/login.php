@@ -27,7 +27,7 @@ $pass = $_POST['senha'] ?? null;
 
 if (!is_null($user) && !is_null($pass)) {
     $q = "SELECT usuario, senha FROM tabela_usuarios WHERE usuario='$user' ";
-    $busca = $banco->query($val);
+    $busca = $banco->query($q);
 
     if ($busca->num_rows > 0) {
 

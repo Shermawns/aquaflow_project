@@ -182,7 +182,7 @@ if (isset($_POST['editar_meta'])) {
                             $q = "SELECT tabela_metas.*, tabela_funcionarios.nome 
                                 FROM tabela_metas 
                                 INNER JOIN tabela_funcionarios 
-                                ON tabela_metas.funcionario_meta = tabela_funcionarios.id ORDER BY mes_meta DESC";
+                                ON tabela_metas.funcionario_meta = tabela_funcionarios.id ORDER BY mes_meta ASC";
                             $busca = $banco->query($q);
 
 
