@@ -40,52 +40,57 @@
 <!-- Lógica de cadastar metas -->
 
 
-<?php
+    <?php
+        if (isset($_POST['cadastrar_meta'])) {
 
-if (isset($_POST['cadastrar_meta'])) {
+            $func  = $_POST['funcionario'];
+            $mes   = $_POST['mes'];
+            $valor = $_POST['meta'];
+            $mes_banco = $mes . "-01";
 
-    $func  = $_POST['funcionario'];
-    $mes   = $_POST['mes'];
-    $valor = $_POST['meta'];
+            $valor = str_replace(',', '.', $valor);
 
+            $data_atual = date('Y-m-01');
 
-    $mes_banco = $mes . "-01";
+            $stmt = $banco->prepare("SELECT data_demissao FROM tabela_funcionarios WHERE id = ?");
+            $stmt->bind_param("i", $func);
+            $stmt->execute();
+            $resultado = $stmt->get_result()->fetch_object();
 
-    $valor = str_replace('.', '', $valor);
+            $check = $banco->prepare("SELECT id FROM tabela_metas WHERE funcionario_meta = ? AND mes_meta = ?");
+            $check->bind_param("is", $func, $mes_banco);
+            $check->execute();
+            $stmt_check = $check->get_result();
 
-    $valor = str_replace(',', '.', $valor);
-    $data_atual = date('Y-m-01');
+            if (empty($func) || empty($mes) || empty($valor)) {
+                $toast_mensagem = "Erro: Preencha todos os campos obrigatórios!";
+                $toast_tipo = "error";
+            } elseif (!$resultado || $resultado->data_demissao !== null) {
+                $toast_mensagem = "Erro: O funcionário deve estar ATIVO para receber uma meta!";
+                $toast_tipo = "error";
+            } elseif ($mes_banco < $data_atual) {
+                $toast_mensagem = "Erro: Não é possível definir metas para meses passados!";
+                $toast_tipo = "error";
+            } elseif ($valor < 0) {
+                $toast_mensagem = "Erro: O valor da meta não pode ser negativo!";
+                $toast_tipo = "error";
+            } elseif ($stmt_check->num_rows > 0) {
+                $toast_mensagem = "Erro: Este funcionário JÁ possui uma meta para este mês!";
+                $toast_tipo = "error";
+            } else {
+                $stmt_ins = $banco->prepare("INSERT INTO tabela_metas (funcionario_meta, mes_meta, vlr_meta) VALUES (?, ?, ?)");
+                $stmt_ins->bind_param("isd", $func, $mes_banco, $valor);
 
-    $busca = "SELECT id FROM tabela_metas WHERE funcionario_meta = '$func' AND mes_meta = '$mes_banco'";
-    $check = $banco->query($busca);
-
-    if (empty($func)) {
-        $toast_mensagem = "Erro: Selecione um funcionário!";
-        $toast_tipo = "error";
-    } elseif ($mes_banco < $data_atual) {
-        $toast_mensagem = "Erro: Não é possível definir metas para meses passados!";
-        $toast_tipo = "error";
-    } elseif ($valor < 0) {
-        $toast_mensagem = "Erro: O valor da meta não pode ser negativo!";
-        $toast_tipo = "error";
-    } elseif ($check->num_rows > 0) {
-        $toast_mensagem = "Erro: Este funcionário JÁ possui uma meta para este mês!";
-        $toast_tipo = "error";
-    } else {
-        $q = "INSERT INTO tabela_metas (funcionario_meta, mes_meta, vlr_meta) 
-                VALUES ('$func', '$mes_banco', '$valor')";
-
-        if ($banco->query($q)) {
-            $toast_mensagem = "Meta definida com sucesso!";
-            $toast_tipo = "success";
-        } else {
-            $toast_mensagem = "Erro ao salvar no banco de dados.";
-            $toast_tipo = "error";
+                if ($stmt_ins->execute()) {
+                    $toast_mensagem = "Meta definida com sucesso!";
+                    $toast_tipo = "success";
+                } else {
+                    $toast_mensagem = "Erro ao salvar no banco de dados.";
+                    $toast_tipo = "error";
+                }
+            }
         }
-    }
-}
-
-?>
+    ?>
 
 
 
@@ -99,9 +104,11 @@ if (isset($_POST['cadastrar_meta'])) {
 
 <?php
 if (isset($_GET['id'])) {
-    $id = intval($_GET['id']);
+    $id = $_GET['id'];
+    $stmt = $banco->prepare("DELETE FROM tabela_metas WHERE id = ?");
+    $stmt->bind_param('i', $id);
 
-    if ($banco->query("DELETE FROM tabela_metas WHERE id = '$id'")) {
+    if ($stmt->execute()) {
         $toast_mensagem = "Meta deletada com sucesso!";
         $toast_tipo = "success";
     } else {
@@ -127,9 +134,10 @@ if (isset($_POST['editar_meta'])) {
     $vlr = str_replace('.', '', $vlr);
     $vlr = str_replace(',', '.', $vlr);
 
-    $q = "UPDATE tabela_metas SET vlr_meta = '$vlr' WHERE id = '$id'";
+    $stmt = $banco->prepare ( "UPDATE tabela_metas SET vlr_meta = ? WHERE id = ?");
+    $stmt->bind_param('di', $vlr, $id);
 
-    if ($banco->query($q)) {
+    if ($stmt->execute()) {
         $toast_mensagem = "Meta atualizada com sucesso!";
         $toast_tipo = "success";
     } else {

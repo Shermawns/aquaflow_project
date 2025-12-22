@@ -7,35 +7,26 @@
     <title>Gerenciar Funcionários - AquaFlow</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="../assets/style.css">
 </head>
-
-
-<!-- FALTA IMPLEMENTAR       
- 
-
-
-   - MOSTRAR VENDAS E METAS NA VISUALIZAÇÃO DO FUNCIONARIO                 
-   
-   
-   -->
-
-
-
 
 <body>
 
 
     <?php
-    session_start();
-    if (!isset($_SESSION['usuario'])) {
-        header("location: ../login/login.php");
-        exit;
-    }
+        session_start();
+        if (!isset($_SESSION['usuario'])) {
+            header("location: ../login/login.php");
+            exit;
+        }
 
-    require_once "../config/banco.php";
-    require_once "../config/function.php";
-    require "../includes/header.php";
+        require_once "../config/banco.php";
+        require_once "../config/function.php";
+        require "../includes/header.php";
+
+        $toast_mensagem = "";
+        $toast_tipo = "";
     ?>
 
 
@@ -73,14 +64,28 @@
             $cpf = $_POST['cpf'];
             $nome = $_POST['nome'];
 
-            $q = "SELECT cpf FROM tabela_funcionarios WHERE cpf = '$cpf'";
-            $busca = $banco->query($q);
+            $stmt = $banco->prepare("SELECT cpf FROM tabela_funcionarios WHERE cpf = ?");
+            
+            $stmt->bind_param("s", $cpf);
 
-            if ($busca->num_rows > 0) {
-                echo "<div class='alert alert-warning' id='msgErro'><strong>Funcionário já cadastrado!</strong></div>";
+            $stmt->execute();
+
+
+            if ($stmt->get_result()->num_rows > 0) {
+                $toast_mensagem = "Erro: Usuário já cadastrado";
+                $toast_tipo = "erro";
             } else {
                 $admissao = date('Y-m-d');
-                $banco->query("INSERT INTO tabela_funcionarios (cpf, nome, data_contratacao) VALUES ('$cpf', '$nome', '$admissao')");
+                $stmt = $banco->prepare("INSERT INTO tabela_funcionarios (cpf, nome, data_contratacao) VALUES (?, ?, ?)");
+                $stmt->bind_param('sss', $cpf, $nome, $admissao);
+                if($stmt->execute()){
+                    $toast_mensagem = "Funcionário cadastrado com sucesso";
+                    $toast_tipo = "success";
+                }else {
+                    $toast_mensagem = "Erro ao cadastrar no banco de dados.";
+                    $toast_tipo = "erro";
+                }
+
             }
         }
         ?>
@@ -99,13 +104,18 @@
 
 
         <?php
-        if (isset($_POST['editar_funcionario'])) {
-            $id = $_POST['id_edit'];
-            $nome = $_POST['nome_edit'];
-            $q = "UPDATE tabela_funcionarios SET nome = '$nome' WHERE id = '$id'";
-            $banco->query($q);
-            echo "<meta http-equiv='refresh' content='0'>";
-        }
+            if (isset($_POST['editar_funcionario'])) {
+                $id = $_POST['id_edit'];
+                $nome = $_POST['nome_edit'];
+                
+                $stmt = $banco->prepare("UPDATE tabela_funcionarios SET nome = ? WHERE id = ?");
+                $stmt->bind_param('si', $nome, $id);
+                
+                if ($stmt->execute()) {
+                    $toast_mensagem = "Funcionário atualizado com sucesso!";
+                    $toast_tipo = "success";
+                }
+            }
         ?>
 
 
@@ -124,9 +134,12 @@
         <?php
         if (isset($_POST['desligar-funcionario'])) {
             $id = $_POST['id_desligamento'];
-            $q = "UPDATE tabela_funcionarios SET data_demissao = NOW() WHERE id = '$id'";
-            $banco->query($q);
-            echo "<meta http-equiv='refresh' content='0'>";
+            $stmt = $banco->prepare( "UPDATE tabela_funcionarios SET data_demissao = NOW() WHERE id = ?");
+            $stmt->bind_param('i', $id);
+            if($stmt->execute()){
+                $toast_mensagem = "Funcionário desligado com sucesso!";
+                $toast_tipo = "success";
+            }
         }
         ?>
 
@@ -143,9 +156,12 @@
         <?php
         if (isset($_POST['ativar-funcionario'])) {
             $id = $_POST['id_ativar'];
-            $q = "UPDATE tabela_funcionarios SET data_demissao = NULL WHERE id = '$id'";
-            $banco->query($q);
-            echo "<meta http-equiv='refresh' content='0'>";
+            $stmt =$banco->prepare ("UPDATE tabela_funcionarios SET data_demissao = NULL WHERE id = ?");
+            $stmt->bind_param('i', $id);
+            if($stmt->execute()){
+                $toast_mensagem = "Funcionário ativado novamente!";
+                $toast_tipo = "success";
+            }
         }
         ?>
 
@@ -182,12 +198,13 @@
                         <!-- Lógica de listar funcionarios -->
 
                         <?php
-                        $q = "SELECT * FROM tabela_funcionarios ORDER BY nome";
-                        $busca = $banco->query($q);
+                        $q = ("SELECT * FROM tabela_funcionarios ORDER BY nome");
 
-                        if ($busca->num_rows > 0) {
+                        $resultado = $banco->query($q);
+
+                        if ($resultado->num_rows > 0) {
                             echo '<tbody>';
-                            while ($reg = $busca->fetch_object()) {
+                            while ($reg = $resultado->fetch_object()) {
                                 echo '<tr>
                                      <td class="ps-4">
                                         <div class="d-flex align-items-center">
@@ -467,7 +484,7 @@
 
 
 
-
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
@@ -554,5 +571,28 @@
         i.setAttribute("maxlength", "14");
         if (v.length == 3 || v.length == 7) i.value += ".";
         if (v.length == 11) i.value += "-";
+    }
+</script>
+
+<script>
+    var mensagem = "<?php echo $toast_mensagem; ?>";
+    var tipo = "<?php echo $toast_tipo; ?>";
+
+    if (mensagem) {
+        var corFundo = tipo === "success" ?
+            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
+            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+
+        Toastify({
+            text: mensagem,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            stopOnFocus: true,
+            style: {
+                background: corFundo,
+            }
+        }).showToast();
     }
 </script>

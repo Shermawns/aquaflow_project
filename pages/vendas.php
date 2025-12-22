@@ -26,31 +26,46 @@
 
 
 <?php
-    if (isset($_POST['registrar_venda'])) {
-        $id_func = $_POST['funcionario'];
-        $data    = $_POST['data_venda'];
-        $id_prod = $_POST['produto_id'];
-        $qtd     = $_POST['qtd_produto'];
+if (isset($_POST['registrar_venda'])) {
+    $id_func = $_POST['funcionario'];
+    $data = $_POST['data_venda'];
+    $id_prod = $_POST['produto_id'];
+    $qtd = $_POST['qtd_produto'];
 
-        $busca = $banco->query("SELECT qtd_estoque, nome_produto FROM tabela_produtos WHERE id = '$id_prod'");
-        $produto = $busca->fetch_object();
+    if (empty($id_func) || empty($data) || empty($id_prod) || empty($qtd)) {
+        $toast_mensagem = "Erro: Todos os campos são obrigatórios!";
+        $toast_tipo = "erro";
+    } else {
+        $stmt = $banco->prepare("SELECT qtd_estoque FROM tabela_produtos WHERE id = ?");
+        $stmt->bind_param("i", $id_prod);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        $produto = $resultado->fetch_object();
 
         if ($qtd > $produto->qtd_estoque) {
             $toast_mensagem = "Erro: Estoque insuficiente! Disponível: " . $produto->qtd_estoque;
             $toast_tipo = "erro";
         } else {
-            $banco->query("INSERT INTO tabela_vendas (funcionario_vendas, data_venda) VALUES ('$id_func', '$data')");
+            $stmt_vendas = $banco->prepare("INSERT INTO tabela_vendas (funcionario_vendas, data_venda) VALUES (?, ?)");
+            $stmt_vendas->bind_param("is", $id_func, $data);
+            $stmt_vendas->execute();
+            
             $id_venda = $banco->insert_id;
 
-            $banco->query("INSERT INTO tabela_vendas_produtos (id_venda, id_produto, qtd_vendido) VALUES ('$id_venda', '$id_prod', '$qtd')");
+            $stmt_itens = $banco->prepare("INSERT INTO tabela_vendas_produtos (id_venda, id_produto, qtd_vendido) VALUES (?, ?, ?)");
+            $stmt_itens->bind_param("iii", $id_venda, $id_prod, $qtd);
+            $stmt_itens->execute();
 
-            $banco->query("UPDATE tabela_produtos SET qtd_estoque = qtd_estoque - '$qtd' WHERE id = '$id_prod'");
+            $stmt_estoque = $banco->prepare("UPDATE tabela_produtos SET qtd_estoque = qtd_estoque - ? WHERE id = ?");
+            $stmt_estoque->bind_param("ii", $qtd, $id_prod);
+            $stmt_estoque->execute();
 
             $toast_mensagem = "Venda registrada com sucesso!";
             $toast_tipo = "sucesso";
         }
     }
-    ?>
+}
+?>
 
 
 

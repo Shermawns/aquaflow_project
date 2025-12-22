@@ -46,16 +46,20 @@
         $preco = str_replace(',', '.', $preco);
 
 
-        $sql = "SELECT qtd_estoque FROM tabela_produtos WHERE id = '$id'";
-        $res = $banco->query($sql);
-        $reg = $res->fetch_object();
+        $stmt = $banco->prepare ( "SELECT qtd_estoque FROM tabela_produtos WHERE id = ?");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
 
-        if ($qtd < $reg->qtd_estoque) {
+        $produto_at = $resultado->fetch_object();
+        $produto_bd = $produto_at->qtd_estoque;
+        if ($qtd < $produto_bd) {
             $toast_mensagem = "Erro: A quantidade não pode ser menor que o estoque atual!";
             $toast_tipo = "erro";
         } else {
-            $sql = "UPDATE tabela_produtos SET nome_produto = '$name', vlr_unitario = '$preco', qtd_estoque = '$qtd' WHERE id = '$id'";
-            if ($banco->query($sql)) {
+            $stmt_ins = $banco->prepare ("UPDATE tabela_produtos SET nome_produto = ?, vlr_unitario = ?, qtd_estoque = ? WHERE id = ?");
+            $stmt_ins->bind_param('sdii', $name, $preco, $qtd, $id);
+            if ($stmt_ins->execute()) {
                 $toast_mensagem = "Produto atualizado com sucesso!";
                 $toast_tipo = "sucesso";
             } else {
@@ -72,39 +76,39 @@
     <!-- Lógica de cadastrar produtos -->
 
     <?php
-    if (isset($_POST['cadastrar_produto'])) {
+        if (isset($_POST['cadastrar_produto'])) {
 
-        $name  = $_POST['produto'];
-        $preco = $_POST['preco'];
-        $qtd   = $_POST['qtd'];
+            $name  = $_POST['produto'];
+            $preco = str_replace(',', '.', $_POST['preco']);
+            $qtd   = $_POST['qtd'];
 
+            $stmt = $banco->prepare("SELECT id FROM tabela_produtos WHERE nome_produto = ?");
+            $stmt->bind_param('s', $name);
+            $stmt->execute();
+            $resultado = $stmt->get_result();
 
-        $check_sql = "SELECT id FROM tabela_produtos WHERE nome_produto = '$name'";
-        $busca = $banco->query($check_sql);
-
-        if ($qtd < 0) {
-            $toast_mensagem = "Erro: Não é possivel cadastrar um produto com quantidade negativa!";
-            $toast_tipo = "erro";
-        } else {
-            if ($busca->num_rows > 0) {
-                $toast_mensagem = "Erro: Já existe um produto com este nome!";
+            if ($qtd < 0) {
+                $toast_mensagem = "Erro: Não é possivel cadastrar um produto com quantidade negativa!";
                 $toast_tipo = "erro";
             } else {
-                $q = "INSERT INTO tabela_produtos (nome_produto, vlr_unitario, qtd_estoque)
-                        VALUES ('$name', '$preco', '$qtd')";
-
-                if ($banco->query($q)) {
-                    $toast_mensagem = "Produto cadastrado com sucesso!";
-                    $toast_tipo = "sucesso";
-                } else {
-                    $toast_mensagem = "Erro ao inserir no banco de dados.";
+                if ($resultado->num_rows > 0) {
+                    $toast_mensagem = "Erro: Já existe um produto com este nome!";
                     $toast_tipo = "erro";
+                } else {
+                    $stmt_ins = $banco->prepare("INSERT INTO tabela_produtos (nome_produto, vlr_unitario, qtd_estoque) VALUES (?, ?, ?)");
+                    $stmt_ins->bind_param('sdi', $name, $preco, $qtd);
+
+                    if ($stmt_ins->execute()) {
+                        $toast_mensagem = "Produto cadastrado com sucesso!";
+                        $toast_tipo = "success";
+                    } else {
+                        $toast_mensagem = "Erro ao inserir no banco de dados.";
+                        $toast_tipo = "erro";
+                    }
                 }
             }
         }
-    }
     ?>
-
 
 
 
@@ -155,6 +159,7 @@
                             $busca = $banco->query($q);
 
                             if ($busca->num_rows > 0) {
+                                echo '<tbody>';
                                 while ($reg = $busca->fetch_object()) {
                                     echo '<tr>
                                             <td class="align-middle ps-4">
@@ -329,7 +334,7 @@
     var tipo = "<?php echo $toast_tipo; ?>";
 
     if (mensagem) {
-        var corFundo = tipo === "sucesso" ?
+        var corFundo = tipo === "success" ?
             "linear-gradient(to right, #00b09b, #2cabd1ff)" :
             "linear-gradient(to right, #ff5f6d, #e562f7ff)";
 

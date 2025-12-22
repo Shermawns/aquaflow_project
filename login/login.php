@@ -24,14 +24,21 @@ $toast_tipo = "";
 $user = $_POST['usuario'] ?? null;
 $pass = $_POST['senha'] ?? null;
 
+if(isset($_POST['usuario']) && (empty($user)) && (empty($pass))){
+    $toast_mensagem = "Erro: Preencha todos os campos obrigatórios!";
+    $toast_tipo = "erro";
 
-if (!is_null($user) && !is_null($pass)) {
-    $q = "SELECT usuario, senha FROM tabela_usuarios WHERE usuario='$user' ";
-    $busca = $banco->query($q);
+} elseif (!is_null($user) && !is_null($pass)) {
+    $stmt = $banco->prepare("SELECT usuario, senha FROM tabela_usuarios WHERE usuario = ?");
+    
+    $stmt->bind_param("s", $user);
+    
+    $stmt->execute();
+    $resultado = $stmt->get_result();
 
-    if ($busca->num_rows > 0) {
+    if ($resultado->num_rows > 0) {
 
-        $reg = $busca->fetch_object();
+        $reg = $resultado->fetch_object();
         
         if (testarHash($pass, $reg->senha)) {
             $_SESSION['usuario'] = $reg->usuario;
