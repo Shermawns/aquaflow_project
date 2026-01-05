@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['usuario'])) {
+    header('location:../login/login.php');
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -14,19 +21,14 @@
 <body>
 
     <?php
+    // session_start(); movido para o topo
 
-        session_start();
-        if (!isset($_SESSION['usuario'])) {
-            header('location:../login/login.php');
-            exit();
-        }
+    require_once "../config/banco.php";
+    require_once "../config/function.php";
+    require "../includes/header.php";
 
-        require_once "../config/banco.php";
-        require_once "../config/function.php";
-        require "../includes/header.php";
-
-        $toast_mensagem = "";
-        $toast_tipo = "";
+    $toast_mensagem = "";
+    $toast_tipo = "";
 
     ?>
 
@@ -54,13 +56,18 @@
             $toast_mensagem = "Erro: A quantidade não pode ser menor que o estoque atual!";
             $toast_tipo = "erro";
         } else {
-            $sql = "UPDATE tabela_produtos SET nome_produto = '$name', vlr_unitario = '$preco', qtd_estoque = '$qtd' WHERE id = '$id'";
-            if ($banco->query($sql)) {
-                $toast_mensagem = "Produto atualizado com sucesso!";
-                $toast_tipo = "sucesso";
-            } else {
-                $toast_mensagem = "Erro ao atualizar no banco!";
+            if (empty($name) || empty($preco) || empty($qtd)) {
+                $toast_mensagem = "Erro: Preencha todos os campos!";
                 $toast_tipo = "erro";
+            } else {
+                $sql = "UPDATE tabela_produtos SET nome_produto = '$name', vlr_unitario = '$preco', qtd_estoque = '$qtd' WHERE id = '$id'";
+                if ($banco->query($sql)) {
+                    $toast_mensagem = "Produto atualizado com sucesso!";
+                    $toast_tipo = "sucesso";
+                } else {
+                    $toast_mensagem = "Erro ao atualizar no banco!";
+                    $toast_tipo = "erro";
+                }
             }
         }
     }
@@ -90,15 +97,20 @@
                 $toast_mensagem = "Erro: Já existe um produto com este nome!";
                 $toast_tipo = "erro";
             } else {
-                $q = "INSERT INTO tabela_produtos (nome_produto, vlr_unitario, qtd_estoque)
-                        VALUES ('$name', '$preco', '$qtd')";
-
-                if ($banco->query($q)) {
-                    $toast_mensagem = "Produto cadastrado com sucesso!";
-                    $toast_tipo = "sucesso";
-                } else {
-                    $toast_mensagem = "Erro ao inserir no banco de dados.";
+                if (empty($name) || empty($preco) || empty($qtd)) {
+                    $toast_mensagem = "Erro: Preencha todos os campos!";
                     $toast_tipo = "erro";
+                } else {
+                    $q = "INSERT INTO tabela_produtos (nome_produto, vlr_unitario, qtd_estoque)
+                            VALUES ('$name', '$preco', '$qtd')";
+
+                    if ($banco->query($q)) {
+                        $toast_mensagem = "Produto cadastrado com sucesso!";
+                        $toast_tipo = "sucesso";
+                    } else {
+                        $toast_mensagem = "Erro ao inserir no banco de dados.";
+                        $toast_tipo = "erro";
+                    }
                 }
             }
         }
@@ -198,7 +210,7 @@
 
 
 
-                             
+
                             ?>
                         </tbody>
                     </table>
@@ -226,15 +238,15 @@
                         <input type="hidden" name="id" id="id_edit">
 
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold">NOME DO PRODUTO</label>
+                            <label class="form-label text-muted small fw-bold">NOME DO PRODUTO <span class="text-danger">*</span></label>
                             <input type="text" class="form-control bg-light" id="produto_edit" name="produto" required>
                         </div>
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold">PREÇO UNITÁRIO</label>
+                            <label class="form-label text-muted small fw-bold">PREÇO UNITÁRIO <span class="text-danger">*</span></label>
                             <input type="number" step="0.01" class="form-control bg-light" id="preco_edit" name="preco" required>
                         </div>
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold">QUANTIDADE</label>
+                            <label class="form-label text-muted small fw-bold">QUANTIDADE <span class="text-danger">*</span></label>
                             <input type="number" class="form-control bg-light" id="qtd_edit" name="qtd" required>
                         </div>
                         <div class="modal-footer border-top-0 justify-content-center">
@@ -268,15 +280,15 @@
                         <input type="hidden" name="id" id="id_edit">
 
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold" for="produto_edit">NOME DO PRODUTO</label>
+                            <label class="form-label text-muted small fw-bold" for="produto_edit">NOME DO PRODUTO <span class="text-danger">*</span></label>
                             <input placeholder="Digite o nome do produto" type="text" class="form-control bg-light" id="produto_edit" name="produto" required>
                         </div>
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold" for="preco_edit">PREÇO UNITÁRIO</label>
+                            <label class="form-label text-muted small fw-bold" for="preco_edit">PREÇO UNITÁRIO <span class="text-danger">*</span></label>
                             <input placeholder="0,00" type="number" step="0.01" class="form-control bg-light" id="preco_edit" name="preco" required>
                         </div>
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold" for="qtd_edit">QUANTIDADE</label>
+                            <label class="form-label text-muted small fw-bold" for="qtd_edit">QUANTIDADE <span class="text-danger">*</span></label>
                             <input placeholder="Quantidade em estoque" type="number" class="form-control bg-light" id="qtd_edit" name="qtd" required>
                         </div>
                         <div class="modal-footer border-top-0 justify-content-center">
@@ -330,8 +342,8 @@
 
     if (mensagem) {
         var corFundo = tipo === "sucesso" ?
-            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
-            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+            "linear-gradient(to right, #11998e, #38ef7d)" : // Verde (Sucesso)
+            "linear-gradient(to right, #ff416c, #ff4b2b)"; // Vermelho (Erro)
 
         Toastify({
             text: mensagem,

@@ -1,5 +1,13 @@
+<?php
+session_start();
+if (!isset($_SESSION['usuario'])) {
+    header('location:../login/login.php');
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,47 +18,66 @@
     <link rel="stylesheet" href="../assets/style.css">
 </head>
 
-<?php 
-    session_start();
-    if(!isset($_SESSION['usuario'])){
-        header('location:../login/login.php');
-        exit();
-    }
+<?php
 
-    require_once "../config/banco.php";
-    require "../includes/header.php";
+require_once "../config/banco.php";
+require "../includes/header.php";
 
-    $toast_mensagem = "";
-    $toast_tipo = "";
+$toast_mensagem = "";
+$toast_tipo = "";
 ?>
 
 
 <?php
-    if (isset($_POST['registrar_venda'])) {
-        $id_func = $_POST['funcionario'];
-        $data    = $_POST['data_venda'];
-        $id_prod = $_POST['produto_id'];
-        $qtd     = $_POST['qtd_produto'];
+if (isset($_POST['registrar_venda'])) {
+    $id_func = $_POST['funcionario'];
+    $data = $_POST['data_venda'];
+    $produtos_json = $_POST['produtos_json'];
 
-        $busca = $banco->query("SELECT qtd_estoque, nome_produto FROM tabela_produtos WHERE id = '$id_prod'");
-        $produto = $busca->fetch_object();
+    $lista_produtos = json_decode($produtos_json, true);
 
-        if ($qtd > $produto->qtd_estoque) {
-            $toast_mensagem = "Erro: Estoque insuficiente! Disponível: " . $produto->qtd_estoque;
-            $toast_tipo = "erro";
-        } else {
+    if (empty($id_func) || empty($data)) {
+        $toast_mensagem = "Erro: Preencha todos os campos obrigatórios!";
+        $toast_tipo = "erro";
+    } elseif (empty($lista_produtos)) {
+        $toast_mensagem = "Erro: Nenhum produto adicionado à venda!";
+        $toast_tipo = "erro";
+    } else {
+        $estoque_ok = true;
+        foreach ($lista_produtos as $item) {
+            $id_prod = $item['id'];
+            $qtd = $item['qtd'];
+            $busca = $banco->query("SELECT qtd_estoque, nome_produto FROM tabela_produtos WHERE id = '$id_prod'");
+            $produto = $busca->fetch_object();
+
+            if ($qtd > $produto->qtd_estoque) {
+                $estoque_ok = false;
+                $toast_mensagem = "Erro: Estoque insuficiente para " . $produto->nome_produto;
+                $toast_tipo = "erro";
+                break;
+            }
+        }
+
+        if ($estoque_ok) {
+
             $banco->query("INSERT INTO tabela_vendas (funcionario_vendas, data_venda) VALUES ('$id_func', '$data')");
             $id_venda = $banco->insert_id;
 
-            $banco->query("INSERT INTO tabela_vendas_produtos (id_venda, id_produto, qtd_vendido) VALUES ('$id_venda', '$id_prod', '$qtd')");
 
-            $banco->query("UPDATE tabela_produtos SET qtd_estoque = qtd_estoque - '$qtd' WHERE id = '$id_prod'");
+            foreach ($lista_produtos as $item) {
+                $id_prod = $item['id'];
+                $qtd = $item['qtd'];
+
+                $banco->query("INSERT INTO tabela_vendas_produtos (id_venda, id_produto, qtd_vendido) VALUES ('$id_venda', '$id_prod', '$qtd')");
+                $banco->query("UPDATE tabela_produtos SET qtd_estoque = qtd_estoque - '$qtd' WHERE id = '$id_prod'");
+            }
 
             $toast_mensagem = "Venda registrada com sucesso!";
             $toast_tipo = "sucesso";
         }
     }
-    ?>
+}
+?>
 
 
 
@@ -82,7 +109,7 @@
                         <tbody>
 
                             <?php
-                                $q = "SELECT 
+                            $q = "SELECT 
                                         tabela_vendas_produtos.qtd_vendido,
                                         tabela_funcionarios.nome AS funcionario_vendas,
                                         tabela_vendas.data_venda,
@@ -93,7 +120,7 @@
                                     INNER JOIN tabela_produtos ON tabela_vendas_produtos.id_produto = tabela_produtos.id
                                     ORDER BY tabela_vendas_produtos.qtd_vendido DESC";
 
-                                $busca = $banco->query($q);
+                            $busca = $banco->query($q);
 
                             // Lógica de listar todas as vendas
 
@@ -139,80 +166,107 @@
     </div>
 
 
-       <div class="modal fade" id="modalCadastrar_venda" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="modalCadastrar_venda" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-4 border-0 shadow">
-                <div class="modal-header border-bottom-0">
-                    <h5 class="modal-title fw-bold">Registrar Venda</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header border-bottom-0">
+                        <h5 class="modal-title fw-bold">Registrar Venda</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
 
-                <div class="modal-body py-4 px-4">
-                    <form method="post">
-                        
-                        <div class="mb-3 text-start">
-                            <label for="func_venda" class="form-label text-muted small fw-bold">FUNCIONÁRIO</label>
-                            <div class="input-group">
-                                <select class="form-select bg-light border-start-0 ps-0" id="func_venda" name="funcionario" required>
-                                    <option value="" selected disabled>Selecione...</option>
-                                    <?php
-                                        $q = "SELECT * FROM tabela_funcionarios WHERE data_demissao IS NULL ORDER BY nome";
+                    <div class="modal-body py-4 px-4">
+                        <form method="post" id="formVenda" onsubmit="return prepararEnvio()">
+                            <input type="hidden" name="produtos_json" id="produtos_json">
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3 text-start">
+                                    <label for="func_venda" class="form-label text-muted small fw-bold">FUNCIONÁRIO <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <select class="form-select bg-light border-start-0 ps-0" id="func_venda" name="funcionario" required>
+                                            <option value="" selected disabled>Selecione...</option>
+                                            <?php
+                                            $q = "SELECT * FROM tabela_funcionarios WHERE data_demissao IS NULL ORDER BY nome";
+                                            $busca = $banco->query($q);
+                                            $busca->data_seek(0); // Reiniciar ponteiro se necessário
+                                            while ($reg = $busca->fetch_object()) {
+                                                echo "<option value='$reg->id'>$reg->nome</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mb-3 text-start">
+                                    <label for="data_venda" class="form-label text-muted small fw-bold">DATA DA VENDA <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="date" class="form-control bg-light border-start-0 ps-0" id="data_venda" name="data_venda" value="<?php echo date('Y-m-d'); ?>" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+                            <h6 class="text-start fw-bold text-primary">Adicionar Itens</h6>
+
+                            <div class="row align-items-end mb-3">
+                                <div class="col-md-6 text-start">
+                                    <label for="prod_venda" class="form-label text-muted small fw-bold">PRODUTO <span class="text-danger">*</span></label>
+                                    <select class="form-select bg-light" id="prod_venda">
+                                        <option value="" selected disabled>Selecione...</option>
+                                        <?php
+                                        $q = "SELECT * FROM tabela_produtos WHERE qtd_estoque > 0 ORDER BY nome_produto";
                                         $busca = $banco->query($q);
+                                        $busca->data_seek(0);
                                         while ($reg = $busca->fetch_object()) {
-                                            echo "<option value='$reg->id'>$reg->nome</option>";
+                                            echo "<option value='$reg->id' data-nome='$reg->nome_produto'>$reg->nome_produto (Estoque: $reg->qtd_estoque)</option>";
                                         }
-                                    ?>
-                                </select>
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 text-start">
+                                    <label for="qtd_venda" class="form-label text-muted small fw-bold">QTD <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control bg-light" id="qtd_venda" min="1" placeholder="0">
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="button" class="btn btn-success w-100 rounded-pill" onclick="adicionarProduto()">
+                                        <i class="fa-solid fa-plus me-1"></i> Add
+                                    </button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="mb-3 text-start">
-                            <label for="data_venda" class="form-label text-muted small fw-bold">DATA DA VENDA</label>
-                            <div class="input-group">
-                                <input type="date" class="form-control bg-light border-start-0 ps-0" id="data_venda" name="data_venda" value="<?php echo date('Y-m-d'); ?>" required>
+                            <div class="table-responsive mb-3" style="max-height: 150px; overflow-y: auto;">
+                                <table class="table table-sm table-bordered" id="tabelaItens">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Produto</th>
+                                            <th style="width: 80px;">Qtd</th>
+                                            <th style="width: 50px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Itens adicionados via JS -->
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
 
-                        <div class="mb-3 text-start">
-                            <label for="prod_venda" class="form-label text-muted small fw-bold">PRODUTO</label>
-                            <div class="input-group">
-                                <select class="form-select bg-light border-start-0 ps-0" id="prod_venda" name="produto_id" required>
-                                    <option value="" selected disabled>Selecione...</option>
-                                    <?php
-                                    $q = "SELECT * FROM tabela_produtos WHERE qtd_estoque > 0 ORDER BY nome_produto";
-                                    $busca = $banco->query($q);
-                                    while ($reg = $busca->fetch_object()) {
-                                        echo "<option value='$reg->id'>$reg->nome_produto (Estoque: $reg->qtd_estoque)</option>";
-                                    }
-                                    ?>
-                                </select>
+                            <div class="modal-footer border-top-0 justify-content-center">
+                                <button type="submit" name="registrar_venda" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Registrar Venda</button>
                             </div>
-                        </div>
-
-                        <div class="mb-3 text-start">
-                            <label for="qtd_venda" class="form-label text-muted small fw-bold">QUANTIDADE</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control bg-light border-start-0 ps-0" id="qtd_venda" name="qtd_produto" min="1" placeholder="Digite a quantidade" required>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer border-top-0 justify-content-center">
-                            <button type="submit" name="registrar_venda" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Registrar</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
 
 
 
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
 </body>
+
 </html>
 
 <script>
@@ -221,8 +275,8 @@
 
     if (mensagem) {
         var corFundo = tipo === "sucesso" ?
-            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
-            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+            "linear-gradient(to right, #11998e, #38ef7d)" : // Verde (Sucesso)
+            "linear-gradient(to right, #ff416c, #ff4b2b)"; // Vermelho (Erro)
 
         Toastify({
             text: mensagem,
@@ -235,5 +289,68 @@
                 background: corFundo,
             }
         }).showToast();
+    }
+</script>
+
+<script>
+    let listaProdutos = [];
+
+    function adicionarProduto() {
+        const selectProd = document.getElementById('prod_venda');
+        const inputQtd = document.getElementById('qtd_venda');
+
+        const idProd = selectProd.value;
+        const nomeProd = selectProd.options[selectProd.selectedIndex].getAttribute('data-nome');
+        const qtd = parseInt(inputQtd.value);
+
+        if (!idProd || !qtd || qtd <= 0) {
+            alert("Selecione um produto e uma quantidade válida.");
+            return;
+        }
+
+        // Verificar se já existe na lista
+        const existe = listaProdutos.find(p => p.id === idProd);
+        if (existe) {
+            existe.qtd += qtd;
+        } else {
+            listaProdutos.push({
+                id: idProd,
+                nome: nomeProd,
+                qtd: qtd
+            });
+        }
+
+        atualizarTabela();
+
+        selectProd.value = "";
+        inputQtd.value = "";
+    }
+
+    function removerProduto(index) {
+        listaProdutos.splice(index, 1);
+        atualizarTabela();
+    }
+
+    function atualizarTabela() {
+        const tbody = document.querySelector('#tabelaItens tbody');
+        tbody.innerHTML = "";
+
+        listaProdutos.forEach((p, index) => {
+            let row = `<tr>
+                <td>${p.nome}</td>
+                <td>${p.qtd}</td>
+                <td><button type="button" class="btn btn-sm btn-danger py-0 px-2" onclick="removerProduto(${index})">&times;</button></td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function prepararEnvio() {
+        if (listaProdutos.length === 0) {
+            alert("Adicione pelo menos um produto à venda!");
+            return false;
+        }
+        document.getElementById('produtos_json').value = JSON.stringify(listaProdutos);
+        return true;
     }
 </script>

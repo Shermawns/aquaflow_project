@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['usuario'])) {
+    header('location:../login/login.php');
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -16,18 +23,11 @@
 
 <?php
 
-    session_start();
+require_once "../config/banco.php";
+require "../includes/header.php";
 
-    if (!isset($_SESSION['usuario'])) {
-        header('location:../login/login.php');
-        exit();
-    }
-
-    require_once "../config/banco.php";
-    require "../includes/header.php";
-
-    $toast_mensagem = "";
-    $toast_tipo = "";
+$toast_mensagem = "";
+$toast_tipo = "";
 
 ?>
 
@@ -59,28 +59,31 @@ if (isset($_POST['cadastrar_meta'])) {
     $busca = "SELECT id FROM tabela_metas WHERE funcionario_meta = '$func' AND mes_meta = '$mes_banco'";
     $check = $banco->query($busca);
 
-    if (empty($func)) {
+    if (empty($func) || empty($mes) || empty($vlr)) {
+        $toast_mensagem = "Erro: Preencha todos os campos!";
+        $toast_tipo = "erro";
+    } elseif (empty($func)) {
         $toast_mensagem = "Erro: Selecione um funcionário!";
-        $toast_tipo = "error";
+        $toast_tipo = "erro";
     } elseif ($mes_banco < $data_atual) {
         $toast_mensagem = "Erro: Não é possível definir metas para meses passados!";
-        $toast_tipo = "error";
+        $toast_tipo = "erro";
     } elseif ($valor < 0) {
         $toast_mensagem = "Erro: O valor da meta não pode ser negativo!";
-        $toast_tipo = "error";
+        $toast_tipo = "erro";
     } elseif ($check->num_rows > 0) {
         $toast_mensagem = "Erro: Este funcionário JÁ possui uma meta para este mês!";
-        $toast_tipo = "error";
+        $toast_tipo = "erro";
     } else {
         $q = "INSERT INTO tabela_metas (funcionario_meta, mes_meta, vlr_meta) 
                 VALUES ('$func', '$mes_banco', '$valor')";
 
         if ($banco->query($q)) {
             $toast_mensagem = "Meta definida com sucesso!";
-            $toast_tipo = "success";
+            $toast_tipo = "sucesso";
         } else {
             $toast_mensagem = "Erro ao salvar no banco de dados.";
-            $toast_tipo = "error";
+            $toast_tipo = "erro";
         }
     }
 }
@@ -103,10 +106,10 @@ if (isset($_GET['id'])) {
 
     if ($banco->query("DELETE FROM tabela_metas WHERE id = '$id'")) {
         $toast_mensagem = "Meta deletada com sucesso!";
-        $toast_tipo = "success";
+        $toast_tipo = "sucesso";
     } else {
         $toast_mensagem = "Erro ao deletar: " . $banco->error;
-        $toast_tipo = "error";
+        $toast_tipo = "erro";
     }
 }
 ?>
@@ -127,14 +130,21 @@ if (isset($_POST['editar_meta'])) {
     $vlr = str_replace('.', '', $vlr);
     $vlr = str_replace(',', '.', $vlr);
 
-    $q = "UPDATE tabela_metas SET vlr_meta = '$vlr' WHERE id = '$id'";
+    $vlr_unclean = $_POST['vlr'];
+    $valor = str_replace(",", ".", $vlr_unclean); // Basic cleanup
 
-    if ($banco->query($q)) {
-        $toast_mensagem = "Meta atualizada com sucesso!";
-        $toast_tipo = "success";
+    if (empty($valor)) {
+        $toast_mensagem = "Erro: O valor da meta não pode ser vazio!";
+        $toast_tipo = "erro";
     } else {
-        $toast_mensagem = "Erro ao atualizar";
-        $toast_tipo = "error";
+        $q = "UPDATE tabela_metas SET vlr_meta = '$valor' WHERE id = '$id'";
+        if ($banco->query($q)) {
+            $toast_mensagem = "Meta atualizada com sucesso!";
+            $toast_tipo = "sucesso";
+        } else {
+            $toast_mensagem = "Erro ao atualizar meta!";
+            $toast_tipo = "erro";
+        }
     }
 }
 ?>
@@ -187,7 +197,7 @@ if (isset($_POST['editar_meta'])) {
 
 
 
-                           // Lógica de listar todas as metas
+                            // Lógica de listar todas as metas
 
                             if ($busca->num_rows > 0) {
                                 while ($reg = $busca->fetch_object()) {
@@ -265,7 +275,7 @@ if (isset($_POST['editar_meta'])) {
 
 
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold" for="id_funcionario">FUNCIONÁRIO</label>
+                            <label class="form-label text-muted small fw-bold" for="id_funcionario">FUNCIONÁRIO <span class="text-danger">*</span></label>
                             <select class="form-select form-select-sm bg-light" id="id_funcionario" name="funcionario" required>
                                 <option value="" selected disabled>Selecione...</option>
                                 <?php
@@ -283,13 +293,13 @@ if (isset($_POST['editar_meta'])) {
 
 
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold" for="mes_meta">MÊS </label>
+                            <label class="form-label text-muted small fw-bold" for="mes_meta">MÊS <span class="text-danger">*</span></label>
                             <input type="month" class="form-control bg-light" id="mes_meta" name="mes" required>
                         </div>
 
 
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold" for="vlr_meta">VALOR DA META (R$)</label>
+                            <label class="form-label text-muted small fw-bold" for="vlr_meta">VALOR DA META (R$) <span class="text-danger">*</span></label>
                             <input type="text" class="form-control bg-light" id="vlr_meta" name="meta" placeholder="0,00" required>
                         </div>
 
@@ -321,11 +331,11 @@ if (isset($_POST['editar_meta'])) {
                 </div>
                 <div class="modal-body py-4 px-4">
                     <form method="post">
-                        
+
                         <input type="hidden" name="id" id="id_edit">
 
                         <div class="mb-3 text-start">
-                            <label class="form-label text-muted small fw-bold">VALOR DA META</label>
+                            <label class="form-label text-muted small fw-bold">VALOR DA META <span class="text-danger">*</span></label>
                             <input type="number" step="0.01" class="form-control bg-light" id="vlr_edit" name="vlr" required>
                         </div>
 
@@ -379,9 +389,9 @@ if (isset($_POST['editar_meta'])) {
     var tipo = "<?php echo $toast_tipo; ?>";
 
     if (mensagem) {
-        var corFundo = tipo === "success" ?
-            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
-            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+        var corFundo = tipo === "sucesso" ?
+            "linear-gradient(to right, #11998e, #38ef7d)" : // Verde (Sucesso)
+            "linear-gradient(to right, #ff416c, #ff4b2b)"; // Vermelho (Erro)
 
         Toastify({
             text: mensagem,

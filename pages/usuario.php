@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['usuario'])) {
+    header("location: ../login/login.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -13,12 +20,6 @@
 
 <body>
     <?php
-
-    session_start();
-    if (!isset($_SESSION['usuario'])) {
-        header("location: ../login/login.php");
-        exit;
-    }
 
     require_once "../config/banco.php";
     require_once "../config/function.php";
@@ -58,21 +59,27 @@
             $pass = $_POST['senha'];
             $confpass = $_POST['confirmar'];
 
-            $q = "SELECT usuario FROM tabela_usuarios WHERE usuario = '$user'";
-
-            $busca = $banco->query($q);
-
-            if ($busca->num_rows > 0) {
-                $toast_mensagem = "Erro: Usuário já cadastrado!";
+            if (empty($user) || empty($pass) || empty($confpass)) {
+                $toast_mensagem = "Erro: Preencha todos os campos!";
                 $toast_tipo = "erro";
             } else {
-                if ($pass == $confpass) {
-                    $hash = gerarHash($pass);
+                $q = "SELECT usuario FROM tabela_usuarios WHERE usuario = '$user'";
+                $busca = $banco->query($q);
 
-                    $banco->query("INSERT INTO tabela_usuarios (usuario, senha) VALUES ('$user', '$hash')");
-                } else {
-                    $toast_mensagem = "Erro: As senhas não conferem!";
+                if ($busca->num_rows > 0) {
+                    $toast_mensagem = "Erro: Usuário já cadastrado!";
                     $toast_tipo = "erro";
+                } else {
+                    if ($pass == $confpass) {
+                        $hash = gerarHash($pass);
+
+                        $banco->query("INSERT INTO tabela_usuarios (usuario, senha) VALUES ('$user', '$hash')");
+                        $toast_mensagem = "Usuário cadastrado com sucesso!";
+                        $toast_tipo = "sucesso";
+                    } else {
+                        $toast_mensagem = "Erro: As senhas não conferem!";
+                        $toast_tipo = "erro";
+                    }
                 }
             }
         }
@@ -92,18 +99,28 @@
             $pass = $_POST['senha_edit'];
             $conf = $_POST['confirmar_edit'];
 
-            if (empty($pass)) {
-                $q = "UPDATE tabela_usuarios SET usuario = '$user' WHERE id = '$id'";
-                $banco->query($q);
-                echo "<meta http-equiv='refresh' content='0'>";
+            if (empty($user)) {
+                $toast_mensagem = "Erro: O nome de usuário não pode ser vazio!";
+                $toast_tipo = "erro";
             } else {
-                if ($pass == $conf) {
-                    $hash = gerarHash($pass);
-                    $q = "UPDATE tabela_usuarios SET usuario = '$user', senha = '$hash' WHERE id = '$id'";
+                if (empty($pass)) {
+                    $q = "UPDATE tabela_usuarios SET usuario = '$user' WHERE id = '$id'";
                     $banco->query($q);
-                    echo "<meta http-equiv='refresh' content='0'>";
+                    $toast_mensagem = "Usuário editado com sucesso!";
+                    $toast_tipo = "sucesso";
+                    // echo "<meta http-equiv='refresh' content='0'>"; // Removido para mostrar o Toast
                 } else {
-                    echo "<div class='alert alert-warning' id='msgErro'><strong>As senhas da edição não conferem!</strong></div>";
+                    if ($pass == $conf) {
+                        $hash = gerarHash($pass);
+                        $q = "UPDATE tabela_usuarios SET usuario = '$user', senha = '$hash' WHERE id = '$id'";
+                        $banco->query($q);
+                        $toast_mensagem = "Usuário editado com sucesso!";
+                        $toast_tipo = "sucesso";
+                        // echo "<meta http-equiv='refresh' content='0'>"; // Removido
+                    } else {
+                        $toast_mensagem = "Erro: As senhas da edição não conferem!";
+                        $toast_tipo = "erro";
+                    }
                 }
             }
         }
@@ -225,7 +242,7 @@
                             <input type="hidden" name="id_edit" id="id_edit">
 
                             <div class="mb-3 text-start">
-                                <label class="form-label text-muted small fw-bold">USUÁRIO</label>
+                                <label class="form-label text-muted small fw-bold">USUÁRIO <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control bg-light" id="usuario_edit" name="usuario_edit" maxlength="50" required>
                             </div>
 
@@ -267,7 +284,7 @@
                     <div class="modal-body py-4 px-4">
                         <form method="post">
                             <div class="mb-3 text-start">
-                                <label for="user" class="form-label text-muted small fw-bold">USUÁRIO</label>
+                                <label for="user" class="form-label text-muted small fw-bold">USUÁRIO <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0 text-primary">
                                         <i class="fa-solid fa-user"></i>
@@ -280,7 +297,7 @@
                             <!-- Campo de senha  -->
 
                             <div class="mb-3 text-start">
-                                <label for="pass" class="form-label text-muted small fw-bold">SENHA</label>
+                                <label for="pass" class="form-label text-muted small fw-bold">SENHA <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0 text-primary">
                                         <i class="fa-solid fa-lock"></i>
@@ -292,7 +309,7 @@
                             <!-- Campo de confirmar senha -->
 
                             <div class="mb-4 text-start">
-                                <label for="confirm" class="form-label text-muted small fw-bold">CONFIRMAR SENHA</label>
+                                <label for="confirm" class="form-label text-muted small fw-bold">CONFIRMAR SENHA <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0 text-primary">
                                         <i class="fa-solid fa-check-double"></i>
@@ -320,7 +337,6 @@
 </html>
 
 <script>
-
     // Função para preencher o modal de edição
 
     function carregarDadosEdicao(botao) {
@@ -338,8 +354,8 @@
 
     if (mensagem) {
         var corFundo = tipo === "sucesso" ?
-            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
-            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+            "linear-gradient(to right, #11998e, #38ef7d)" :
+            "linear-gradient(to right, #ff416c, #ff4b2b)";
 
         Toastify({
             text: mensagem,

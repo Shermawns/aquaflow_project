@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -13,7 +16,7 @@
 
 
 <?php
-session_start();
+// session_start(); removido daqui, movido para o topo
 
 require_once "../config/banco.php";
 require_once "../config/function.php";
@@ -26,26 +29,29 @@ $pass = $_POST['senha'] ?? null;
 
 
 if (!is_null($user) && !is_null($pass)) {
-    $q = "SELECT usuario, senha FROM tabela_usuarios WHERE usuario='$user' ";
-    $busca = $banco->query($q);
+    $user = $_POST['usuario'];
+    $pass = $_POST['senha'];
 
-    if ($busca->num_rows > 0) {
+    if (empty($user) || empty($pass)) {
+        $toast_mensagem = "Preencha todos os campos!";
+        $toast_tipo = "erro";
+    } else {
+        $q = "SELECT * FROM tabela_usuarios WHERE usuario = '$user'";
+        $busca = $banco->query($q);
 
-        $reg = $busca->fetch_object();
-        
-        if (testarHash($pass, $reg->senha)) {
-            $_SESSION['usuario'] = $reg->usuario;
-            $toast_mensagem = "Bem vindo novamente " . $user;
-            "!";
-            $toast_tipo = "sucesso";
-            header('location: ../pages/main.php');
+        if ($busca->num_rows > 0) {
+            $reg = $busca->fetch_object();
+            if (password_verify($pass, $reg->senha)) {
+                $_SESSION['usuario'] = $user;
+                header('location:../pages/vendas.php');
+            } else {
+                $toast_mensagem = "Senha incorreta!";
+                $toast_tipo = "erro";
+            }
         } else {
-            $toast_mensagem = "Erro: Senha incorreta!";
+            $toast_mensagem = "Usuário não encontrado!";
             $toast_tipo = "erro";
         }
-    } else {
-        $toast_mensagem = "Erro: Usuário não cadastrado!";
-        $toast_tipo = "erro";
     }
 }
 ?>
@@ -61,12 +67,12 @@ if (!is_null($user) && !is_null($pass)) {
 
                 <form method="post">
                     <div class="mb-3">
-                        <label for="user" class="form-label">Usuário</label>
+                        <label for="user" class="form-label">Usuário <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="user" name="usuario" autocomplete="username" maxlength="50" placeholder="Digite seu usuário">
                     </div>
 
                     <div class="mb-5">
-                        <label for="pass" class="form-label">Senha</label>
+                        <label for="pass" class="form-label">Senha <span class="text-danger">*</span></label>
                         <input type="password" class="form-control" id="pass" name="senha" autocomplete="current-password" required placeholder="Digite sua senha">
                     </div>
 
@@ -88,8 +94,8 @@ if (!is_null($user) && !is_null($pass)) {
 
     if (mensagem) {
         var corFundo = tipo === "sucesso" ?
-            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
-            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+            "linear-gradient(to right, #11998e, #38ef7d)" : // Verde (Sucesso)
+            "linear-gradient(to right, #ff416c, #ff4b2b)"; // Vermelho (Erro)
 
         Toastify({
             text: mensagem,
