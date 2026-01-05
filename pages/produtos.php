@@ -48,16 +48,29 @@ if (!isset($_SESSION['usuario'])) {
         $preco = str_replace(',', '.', $preco);
 
 
-        $sql = "SELECT qtd_estoque FROM tabela_produtos WHERE id = '$id'";
-        $res = $banco->query($sql);
-        $reg = $res->fetch_object();
+        $stmt = $banco->prepare ( "SELECT qtd_estoque FROM tabela_produtos WHERE id = ?");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
 
-        if ($qtd < $reg->qtd_estoque) {
+        $produto_at = $resultado->fetch_object();
+        $produto_bd = $produto_at->qtd_estoque;
+        if ($qtd < $produto_bd) {
             $toast_mensagem = "Erro: A quantidade não pode ser menor que o estoque atual!";
             $toast_tipo = "erro";
         } else {
+<<<<<<< HEAD
             if (empty($name) || empty($preco) || empty($qtd)) {
                 $toast_mensagem = "Erro: Preencha todos os campos!";
+=======
+            $stmt_ins = $banco->prepare ("UPDATE tabela_produtos SET nome_produto = ?, vlr_unitario = ?, qtd_estoque = ? WHERE id = ?");
+            $stmt_ins->bind_param('sdii', $name, $preco, $qtd, $id);
+            if ($stmt_ins->execute()) {
+                $toast_mensagem = "Produto atualizado com sucesso!";
+                $toast_tipo = "sucesso";
+            } else {
+                $toast_mensagem = "Erro ao atualizar no banco!";
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
                 $toast_tipo = "erro";
             } else {
                 $sql = "UPDATE tabela_produtos SET nome_produto = '$name', vlr_unitario = '$preco', qtd_estoque = '$qtd' WHERE id = '$id'";
@@ -79,24 +92,22 @@ if (!isset($_SESSION['usuario'])) {
     <!-- Lógica de cadastrar produtos -->
 
     <?php
-    if (isset($_POST['cadastrar_produto'])) {
+        if (isset($_POST['cadastrar_produto'])) {
 
-        $name  = $_POST['produto'];
-        $preco = $_POST['preco'];
-        $qtd   = $_POST['qtd'];
+            $name  = $_POST['produto'];
+            $preco = str_replace(',', '.', $_POST['preco']);
+            $qtd   = $_POST['qtd'];
 
+            $stmt = $banco->prepare("SELECT id FROM tabela_produtos WHERE nome_produto = ?");
+            $stmt->bind_param('s', $name);
+            $stmt->execute();
+            $resultado = $stmt->get_result();
 
-        $check_sql = "SELECT id FROM tabela_produtos WHERE nome_produto = '$name'";
-        $busca = $banco->query($check_sql);
-
-        if ($qtd < 0) {
-            $toast_mensagem = "Erro: Não é possivel cadastrar um produto com quantidade negativa!";
-            $toast_tipo = "erro";
-        } else {
-            if ($busca->num_rows > 0) {
-                $toast_mensagem = "Erro: Já existe um produto com este nome!";
+            if ($qtd < 0) {
+                $toast_mensagem = "Erro: Não é possivel cadastrar um produto com quantidade negativa!";
                 $toast_tipo = "erro";
             } else {
+<<<<<<< HEAD
                 if (empty($name) || empty($preco) || empty($qtd)) {
                     $toast_mensagem = "Erro: Preencha todos os campos!";
                     $toast_tipo = "erro";
@@ -107,6 +118,18 @@ if (!isset($_SESSION['usuario'])) {
                     if ($banco->query($q)) {
                         $toast_mensagem = "Produto cadastrado com sucesso!";
                         $toast_tipo = "sucesso";
+=======
+                if ($resultado->num_rows > 0) {
+                    $toast_mensagem = "Erro: Já existe um produto com este nome!";
+                    $toast_tipo = "erro";
+                } else {
+                    $stmt_ins = $banco->prepare("INSERT INTO tabela_produtos (nome_produto, vlr_unitario, qtd_estoque) VALUES (?, ?, ?)");
+                    $stmt_ins->bind_param('sdi', $name, $preco, $qtd);
+
+                    if ($stmt_ins->execute()) {
+                        $toast_mensagem = "Produto cadastrado com sucesso!";
+                        $toast_tipo = "success";
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
                     } else {
                         $toast_mensagem = "Erro ao inserir no banco de dados.";
                         $toast_tipo = "erro";
@@ -114,9 +137,7 @@ if (!isset($_SESSION['usuario'])) {
                 }
             }
         }
-    }
     ?>
-
 
 
 
@@ -167,6 +188,7 @@ if (!isset($_SESSION['usuario'])) {
                             $busca = $banco->query($q);
 
                             if ($busca->num_rows > 0) {
+                                echo '<tbody>';
                                 while ($reg = $busca->fetch_object()) {
                                     echo '<tr>
                                             <td class="align-middle ps-4">
@@ -341,9 +363,15 @@ if (!isset($_SESSION['usuario'])) {
     var tipo = "<?php echo $toast_tipo; ?>";
 
     if (mensagem) {
+<<<<<<< HEAD
         var corFundo = tipo === "sucesso" ?
             "linear-gradient(to right, #11998e, #38ef7d)" : // Verde (Sucesso)
             "linear-gradient(to right, #ff416c, #ff4b2b)"; // Vermelho (Erro)
+=======
+        var corFundo = tipo === "success" ?
+            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
+            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
 
         Toastify({
             text: mensagem,

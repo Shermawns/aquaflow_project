@@ -25,6 +25,7 @@ $toast_tipo = "";
     <link rel="stylesheet" href="../assets/style.css">
 </head>
 
+<<<<<<< HEAD
 <?php
 // session_start movido para o topo
 ?>
@@ -86,6 +87,24 @@ $toast_tipo = "";
             }
         }
     }
+=======
+<body>
+
+
+    <?php
+        session_start();
+        if (!isset($_SESSION['usuario'])) {
+            header("location: ../login/login.php");
+            exit;
+        }
+
+        require_once "../config/banco.php";
+        require_once "../config/function.php";
+        require "../includes/header.php";
+
+        $toast_mensagem = "";
+        $toast_tipo = "";
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
     ?>
 
 
@@ -101,6 +120,7 @@ $toast_tipo = "";
     <!-- Lógica de editar funcionario -->
 
 
+<<<<<<< HEAD
     <?php
     if (isset($_POST['editar_funcionario'])) {
         $id = $_POST['id_edit'];
@@ -116,6 +136,43 @@ $toast_tipo = "";
             } else {
                 $toast_mensagem = "Erro ao atualizar funcionário!";
                 $toast_tipo = "erro";
+=======
+
+
+
+
+
+        <!-- Lógica de cadastrar funcionario -->
+
+
+        <?php
+        if (isset($_POST['cpf'])) {
+            $cpf = $_POST['cpf'];
+            $nome = $_POST['nome'];
+
+            $stmt = $banco->prepare("SELECT cpf FROM tabela_funcionarios WHERE cpf = ?");
+            
+            $stmt->bind_param("s", $cpf);
+
+            $stmt->execute();
+
+
+            if ($stmt->get_result()->num_rows > 0) {
+                $toast_mensagem = "Erro: Usuário já cadastrado";
+                $toast_tipo = "erro";
+            } else {
+                $admissao = date('Y-m-d');
+                $stmt = $banco->prepare("INSERT INTO tabela_funcionarios (cpf, nome, data_contratacao) VALUES (?, ?, ?)");
+                $stmt->bind_param('sss', $cpf, $nome, $admissao);
+                if($stmt->execute()){
+                    $toast_mensagem = "Funcionário cadastrado com sucesso";
+                    $toast_tipo = "success";
+                }else {
+                    $toast_mensagem = "Erro ao cadastrar no banco de dados.";
+                    $toast_tipo = "erro";
+                }
+
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
             }
         }
     }
@@ -134,6 +191,7 @@ $toast_tipo = "";
     <!--Lógica de desligamento -->
 
 
+<<<<<<< HEAD
     <?php
     if (isset($_POST['desligar-funcionario'])) {
         $id = $_POST['id_desligamento'];
@@ -147,6 +205,22 @@ $toast_tipo = "";
         }
     }
     ?>
+=======
+        <?php
+            if (isset($_POST['editar_funcionario'])) {
+                $id = $_POST['id_edit'];
+                $nome = $_POST['nome_edit'];
+                
+                $stmt = $banco->prepare("UPDATE tabela_funcionarios SET nome = ? WHERE id = ?");
+                $stmt->bind_param('si', $nome, $id);
+                
+                if ($stmt->execute()) {
+                    $toast_mensagem = "Funcionário atualizado com sucesso!";
+                    $toast_tipo = "success";
+                }
+            }
+        ?>
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
 
 
 
@@ -158,6 +232,7 @@ $toast_tipo = "";
     <!--Lógica de ativação -->
 
 
+<<<<<<< HEAD
     <?php
     if (isset($_POST['ativar-funcionario'])) {
         $id = $_POST['id_ativar'];
@@ -171,6 +246,45 @@ $toast_tipo = "";
         }
     }
     ?>
+=======
+
+        <!--Lógica de desligamento -->
+
+
+        <?php
+        if (isset($_POST['desligar-funcionario'])) {
+            $id = $_POST['id_desligamento'];
+            $stmt = $banco->prepare( "UPDATE tabela_funcionarios SET data_demissao = NOW() WHERE id = ?");
+            $stmt->bind_param('i', $id);
+            if($stmt->execute()){
+                $toast_mensagem = "Funcionário desligado com sucesso!";
+                $toast_tipo = "success";
+            }
+        }
+        ?>
+
+
+
+
+
+
+
+
+        <!--Lógica de ativação -->
+
+
+        <?php
+        if (isset($_POST['ativar-funcionario'])) {
+            $id = $_POST['id_ativar'];
+            $stmt =$banco->prepare ("UPDATE tabela_funcionarios SET data_demissao = NULL WHERE id = ?");
+            $stmt->bind_param('i', $id);
+            if($stmt->execute()){
+                $toast_mensagem = "Funcionário ativado novamente!";
+                $toast_tipo = "success";
+            }
+        }
+        ?>
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
 
 
 
@@ -204,6 +318,7 @@ $toast_tipo = "";
 
                     <!-- Lógica de listar funcionarios -->
 
+<<<<<<< HEAD
                     <?php
                     $q = "SELECT * FROM tabela_funcionarios ORDER BY nome";
                     $busca = $banco->query($q);
@@ -212,6 +327,17 @@ $toast_tipo = "";
                         echo '<tbody>';
                         while ($reg = $busca->fetch_object()) {
                             echo '<tr>
+=======
+                        <?php
+                        $q = ("SELECT * FROM tabela_funcionarios ORDER BY nome");
+
+                        $resultado = $banco->query($q);
+
+                        if ($resultado->num_rows > 0) {
+                            echo '<tbody>';
+                            while ($reg = $resultado->fetch_object()) {
+                                echo '<tr>
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
                                      <td class="ps-4">
                                         <div class="d-flex align-items-center">
                                                 <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px;height: 40px;">
@@ -522,9 +648,14 @@ $toast_tipo = "";
 
 
 
+<<<<<<< HEAD
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+=======
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
 </body>
 
 </html>
@@ -670,9 +801,15 @@ $toast_tipo = "";
     var tipo = "<?php echo $toast_tipo; ?>";
 
     if (mensagem) {
+<<<<<<< HEAD
         var corFundo = tipo === "sucesso" ?
             "linear-gradient(to right, #11998e, #38ef7d)" :
             "linear-gradient(to right, #ff416c, #ff4b2b)";
+=======
+        var corFundo = tipo === "success" ?
+            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
+            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
 
         Toastify({
             text: mensagem,

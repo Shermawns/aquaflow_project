@@ -27,7 +27,11 @@ $toast_tipo = "";
 $user = $_POST['usuario'] ?? null;
 $pass = $_POST['senha'] ?? null;
 
+if(isset($_POST['usuario']) && (empty($user)) && (empty($pass))){
+    $toast_mensagem = "Erro: Preencha todos os campos obrigatórios!";
+    $toast_tipo = "erro";
 
+<<<<<<< HEAD
 if (!is_null($user) && !is_null($pass)) {
     $user = $_POST['usuario'];
     $pass = $_POST['senha'];
@@ -48,6 +52,26 @@ if (!is_null($user) && !is_null($pass)) {
                 $toast_mensagem = "Senha incorreta!";
                 $toast_tipo = "erro";
             }
+=======
+} elseif (!is_null($user) && !is_null($pass)) {
+    $stmt = $banco->prepare("SELECT usuario, senha FROM tabela_usuarios WHERE usuario = ?");
+    
+    $stmt->bind_param("s", $user);
+    
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+
+    if ($resultado->num_rows > 0) {
+
+        $reg = $resultado->fetch_object();
+        
+        if (testarHash($pass, $reg->senha)) {
+            $_SESSION['usuario'] = $reg->usuario;
+            $toast_mensagem = "Bem vindo novamente " . $user;
+            "!";
+            $toast_tipo = "sucesso";
+            header('location: ../pages/main.php');
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
         } else {
             $toast_mensagem = "Usuário não encontrado!";
             $toast_tipo = "erro";

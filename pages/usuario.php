@@ -52,13 +52,14 @@ if (!isset($_SESSION['usuario'])) {
 
         <!-- Lógica de registro-->
 
-        <?php
-        if (isset($_POST['usuario'])) {
+<?php
 
-            $user = $_POST['usuario'];
-            $pass = $_POST['senha'];
-            $confpass = $_POST['confirmar'];
+if (isset($_POST['usuario']) && !isset($_POST['editar_usuario'])) {
+    $user = $_POST['usuario'];
+    $pass = $_POST['senha'];
+    $confpass = $_POST['confirmar'];
 
+<<<<<<< HEAD
             if (empty($user) || empty($pass) || empty($confpass)) {
                 $toast_mensagem = "Erro: Preencha todos os campos!";
                 $toast_tipo = "erro";
@@ -81,12 +82,41 @@ if (!isset($_SESSION['usuario'])) {
                         $toast_tipo = "erro";
                     }
                 }
+=======
+    $stmt = $banco->prepare("SELECT usuario FROM tabela_usuarios WHERE usuario = ?");
+    $stmt->bind_param("s", $user);
+    $stmt->execute();
+
+    if ($stmt->get_result()->num_rows > 0) {
+        $toast_mensagem = "Erro: Usuário já cadastrado!";
+        $toast_tipo = "erro";
+    } else {
+        if ($pass === $confpass) {
+            $hash = gerarHash($pass);
+            
+            $stmt_in = $banco->prepare("INSERT INTO tabela_usuarios (usuario, senha) VALUES (?, ?)");
+            $stmt_in->bind_param("ss", $user, $hash);
+            
+            if ($stmt_in->execute()) {
+                $toast_mensagem = "Usuário cadastrado com sucesso!";
+                $toast_tipo = "success";
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
             }
+        } else {
+            $toast_mensagem = "Erro: As senhas não conferem!";
+            $toast_tipo = "erro";
         }
-        ?>
+    }
+}
 
 
+if (isset($_POST['editar_usuario'])) {
+    $id = $_POST['id_edit'];
+    $user = $_POST['usuario_edit'];
+    $pass = $_POST['senha_edit'];
+    $conf = $_POST['confirmar_edit'];
 
+<<<<<<< HEAD
 
 
 
@@ -123,30 +153,51 @@ if (!isset($_SESSION['usuario'])) {
                     }
                 }
             }
+=======
+    if (empty($pass)) {
+        $stmt = $banco->prepare("UPDATE tabela_usuarios SET usuario = ? WHERE id = ?");
+        $stmt->bind_param("si", $user, $id);
+    } else {
+        if ($pass === $conf) {
+            $hash = gerarHash($pass);
+            $stmt = $banco->prepare("UPDATE tabela_usuarios SET usuario = ?, senha = ? WHERE id = ?");
+            $stmt->bind_param("ssi", $user, $hash, $id);
+            $toast_mensagem = "Dados alterados com sucesso!";
+            $toast_tipo = "success";
+        } else {
+            $toast_mensagem = "Erro: As senhas não conferem!";
+            $toast_tipo = "erro";
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
         }
-        ?>
+    }
+}
 
 
+if (isset($_GET['id'])) {
+    $id_del = $_GET['id'];
 
+    $stmt = $banco->prepare("SELECT usuario FROM tabela_usuarios WHERE id = ?");
+    $stmt->bind_param("i", $id_del);
+    $stmt->execute();
+    $res = $stmt_busca->get_result()->fetch_object();
 
-        <!-- Lógica de deletar conta -->
-
-        <?php
-        if (isset($_GET['id'])) {
-            $conta = $_GET['id'];
-
-            $busca = $banco->query("SELECT usuario FROM tabela_usuarios WHERE id = '$conta'");
-            $reg = $busca->fetch_object();
-
-            $delete = $banco->query("DELETE FROM tabela_usuarios WHERE id = '$conta'");
-
-            if ($delete && $reg && $reg->usuario == $_SESSION['usuario']) {
+    if ($res) {
+        $usuario = $res->usuario;
+        $stmt_del = $banco->prepare("DELETE FROM tabela_usuarios WHERE id = ?");
+        $stmt_del->bind_param("i", $id_del);
+        
+        if ($stmt_del->execute()) {
+            if ($usuario_alvo === $_SESSION['usuario']) {
                 session_destroy();
                 header('Location: ../login/login.php');
                 exit;
             }
+            $toast_mensagem = "Usuário removido com sucesso!";
+            $toast_tipo = "success";
         }
-        ?>
+    }
+}
+?>
 
 
 
@@ -353,9 +404,15 @@ if (!isset($_SESSION['usuario'])) {
     var tipo = "<?php echo $toast_tipo; ?>";
 
     if (mensagem) {
+<<<<<<< HEAD
         var corFundo = tipo === "sucesso" ?
             "linear-gradient(to right, #11998e, #38ef7d)" :
             "linear-gradient(to right, #ff416c, #ff4b2b)";
+=======
+        var corFundo = tipo === "success" ?
+            "linear-gradient(to right, #00b09b, #2cabd1ff)" :
+            "linear-gradient(to right, #ff5f6d, #e562f7ff)";
+>>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
 
         Toastify({
             text: mensagem,
