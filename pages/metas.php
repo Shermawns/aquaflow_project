@@ -1,10 +1,3 @@
-<?php
-session_start();
-if (!isset($_SESSION['usuario'])) {
-    header('location:../login/login.php');
-    exit();
-}
-?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -18,10 +11,15 @@ if (!isset($_SESSION['usuario'])) {
     <link rel="stylesheet" href="../assets/style.css">
 </head>
 
-
+<body>
 
 
 <?php
+session_start();
+if (!isset($_SESSION['usuario'])) {
+    header('location:../login/login.php');
+    exit();
+}
 
 require_once "../config/banco.php";
 require "../includes/header.php";
@@ -29,111 +27,7 @@ require "../includes/header.php";
 $toast_mensagem = "";
 $toast_tipo = "";
 
-?>
-
-
-
-
-
-
-
-<!-- Lógica de cadastar metas -->
-
-
-    <?php
-        if (isset($_POST['cadastrar_meta'])) {
-
-            $func  = $_POST['funcionario'];
-            $mes   = $_POST['mes'];
-            $valor = $_POST['meta'];
-            $mes_banco = $mes . "-01";
-
-            $valor = str_replace(',', '.', $valor);
-
-            $data_atual = date('Y-m-01');
-
-            $stmt = $banco->prepare("SELECT data_demissao FROM tabela_funcionarios WHERE id = ?");
-            $stmt->bind_param("i", $func);
-            $stmt->execute();
-            $resultado = $stmt->get_result()->fetch_object();
-
-            $check = $banco->prepare("SELECT id FROM tabela_metas WHERE funcionario_meta = ? AND mes_meta = ?");
-            $check->bind_param("is", $func, $mes_banco);
-            $check->execute();
-            $stmt_check = $check->get_result();
-
-            if (empty($func) || empty($mes) || empty($valor)) {
-                $toast_mensagem = "Erro: Preencha todos os campos obrigatórios!";
-                $toast_tipo = "error";
-            } elseif (!$resultado || $resultado->data_demissao !== null) {
-                $toast_mensagem = "Erro: O funcionário deve estar ATIVO para receber uma meta!";
-                $toast_tipo = "error";
-            } elseif ($mes_banco < $data_atual) {
-                $toast_mensagem = "Erro: Não é possível definir metas para meses passados!";
-                $toast_tipo = "error";
-            } elseif ($valor < 0) {
-                $toast_mensagem = "Erro: O valor da meta não pode ser negativo!";
-                $toast_tipo = "error";
-            } elseif ($stmt_check->num_rows > 0) {
-                $toast_mensagem = "Erro: Este funcionário JÁ possui uma meta para este mês!";
-                $toast_tipo = "error";
-            } else {
-                $stmt_ins = $banco->prepare("INSERT INTO tabela_metas (funcionario_meta, mes_meta, vlr_meta) VALUES (?, ?, ?)");
-                $stmt_ins->bind_param("isd", $func, $mes_banco, $valor);
-
-<<<<<<< HEAD
-    $busca = "SELECT id FROM tabela_metas WHERE funcionario_meta = '$func' AND mes_meta = '$mes_banco'";
-    $check = $banco->query($busca);
-
-    if (empty($func) || empty($mes) || empty($vlr)) {
-        $toast_mensagem = "Erro: Preencha todos os campos!";
-        $toast_tipo = "erro";
-    } elseif (empty($func)) {
-        $toast_mensagem = "Erro: Selecione um funcionário!";
-        $toast_tipo = "erro";
-    } elseif ($mes_banco < $data_atual) {
-        $toast_mensagem = "Erro: Não é possível definir metas para meses passados!";
-        $toast_tipo = "erro";
-    } elseif ($valor < 0) {
-        $toast_mensagem = "Erro: O valor da meta não pode ser negativo!";
-        $toast_tipo = "erro";
-    } elseif ($check->num_rows > 0) {
-        $toast_mensagem = "Erro: Este funcionário JÁ possui uma meta para este mês!";
-        $toast_tipo = "erro";
-    } else {
-        $q = "INSERT INTO tabela_metas (funcionario_meta, mes_meta, vlr_meta) 
-                VALUES ('$func', '$mes_banco', '$valor')";
-
-        if ($banco->query($q)) {
-            $toast_mensagem = "Meta definida com sucesso!";
-            $toast_tipo = "sucesso";
-        } else {
-            $toast_mensagem = "Erro ao salvar no banco de dados.";
-            $toast_tipo = "erro";
-=======
-                if ($stmt_ins->execute()) {
-                    $toast_mensagem = "Meta definida com sucesso!";
-                    $toast_tipo = "success";
-                } else {
-                    $toast_mensagem = "Erro ao salvar no banco de dados.";
-                    $toast_tipo = "error";
-                }
-            }
->>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
-        }
-    ?>
-
-
-
-
-
-
-
-
-<!-- Lógica de deletar metas -->
-
-
-<?php
+// Lógica de deletar meta
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
     $stmt = $banco->prepare("DELETE FROM tabela_metas WHERE id = ?");
@@ -147,17 +41,60 @@ if (isset($_GET['id'])) {
         $toast_tipo = "erro";
     }
 }
-?>
 
+// Lógica de cadastrar meta
+if (isset($_POST['cadastrar_meta'])) {
 
+    $func  = $_POST['funcionario'];
+    $mes   = $_POST['mes'];
+    $valor = $_POST['meta'];
+    $mes_banco = $mes . "-01";
 
+    $valor = str_replace('.', '', $valor);
+    $valor = str_replace(',', '.', $valor); 
 
+    $data_atual = date('Y-m-01');
 
+    $stmt = $banco->prepare("SELECT data_demissao FROM tabela_funcionarios WHERE id = ?");
+    $stmt->bind_param("i", $func);
+    $stmt->execute();
+    $resultado = $stmt->get_result()->fetch_object();
 
-<!-- Lógica de editar metas -->
+    $check = $banco->prepare("SELECT id FROM tabela_metas WHERE funcionario_meta = ? AND mes_meta = ?");
+    $check->bind_param("is", $func, $mes_banco);
+    $check->execute();
+    $stmt_check = $check->get_result();
 
+    if (empty($func) || empty($mes) || empty($valor)) {
+        $toast_mensagem = "Erro: Preencha todos os campos obrigatórios!";
+        $toast_tipo = "erro";
+    } elseif (!$resultado || $resultado->data_demissao !== null) {
+        $toast_mensagem = "Erro: O funcionário deve estar ATIVO para receber uma meta!";
+        $toast_tipo = "erro";
+    } elseif ($mes_banco < $data_atual) {
+        $toast_mensagem = "Erro: Não é possível definir metas para meses passados!";
+        $toast_tipo = "erro";
+    } elseif ($valor < 0) {
+        $toast_mensagem = "Erro: O valor da meta não pode ser negativo!";
+        $toast_tipo = "erro";
+    } elseif ($stmt_check->num_rows > 0) {
+        $toast_mensagem = "Erro: Este funcionário JÁ possui uma meta para este mês!";
+        $toast_tipo = "erro";
+    } else {
+        $stmt_ins = $banco->prepare("INSERT INTO tabela_metas (funcionario_meta, mes_meta, vlr_meta) VALUES (?, ?, ?)");
+        $stmt_ins->bind_param("isd", $func, $mes_banco, $valor);
 
-<?php
+        if ($stmt_ins->execute()) {
+            $toast_mensagem = "Meta definida com sucesso!";
+            $toast_tipo = "sucesso";
+        } else {
+            $toast_mensagem = "Erro ao salvar no banco de dados.";
+            $toast_tipo = "erro";
+        }
+    }
+}
+
+// Lógica de editar
 if (isset($_POST['editar_meta'])) {
     $id = $_POST['id'];
     $vlr = $_POST['vlr'];
@@ -165,24 +102,14 @@ if (isset($_POST['editar_meta'])) {
     $vlr = str_replace('.', '', $vlr);
     $vlr = str_replace(',', '.', $vlr);
 
-<<<<<<< HEAD
-    $vlr_unclean = $_POST['vlr'];
-    $valor = str_replace(",", ".", $vlr_unclean); // Basic cleanup
-
-    if (empty($valor)) {
+    if (empty($vlr) && $vlr !== '0') {
         $toast_mensagem = "Erro: O valor da meta não pode ser vazio!";
         $toast_tipo = "erro";
-=======
-    $stmt = $banco->prepare ( "UPDATE tabela_metas SET vlr_meta = ? WHERE id = ?");
-    $stmt->bind_param('di', $vlr, $id);
-
-    if ($stmt->execute()) {
-        $toast_mensagem = "Meta atualizada com sucesso!";
-        $toast_tipo = "success";
->>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
     } else {
-        $q = "UPDATE tabela_metas SET vlr_meta = '$valor' WHERE id = '$id'";
-        if ($banco->query($q)) {
+        $stmt_upd = $banco->prepare("UPDATE tabela_metas SET vlr_meta = ? WHERE id = ?");
+        $stmt_upd->bind_param("di", $vlr, $id);
+
+        if ($stmt_upd->execute()) {
             $toast_mensagem = "Meta atualizada com sucesso!";
             $toast_tipo = "sucesso";
         } else {
@@ -196,12 +123,6 @@ if (isset($_POST['editar_meta'])) {
 
 
 
-
-<!-- Caixa de cadastar metas -->
-
-
-<body>
-
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
             <div>
@@ -212,8 +133,6 @@ if (isset($_POST['editar_meta'])) {
                 <i class="fa-solid fa-plus me-2"></i>Definir meta
             </button>
         </div>
-
-
 
         <div class="card border-0 rounded-4 overflow-hidden">
             <div class="card-body p-0">
@@ -228,20 +147,13 @@ if (isset($_POST['editar_meta'])) {
                             </tr>
                         </thead>
                         <tbody>
-
-                            <!-- Lógica de capturar o nome do funcionário pelo ID utilizando INNER JOIN -->
-
-
+                            <!-- Lógica de capturar o nome do funcionário e listar metas -->
                             <?php
                             $q = "SELECT tabela_metas.*, tabela_funcionarios.nome 
-                                FROM tabela_metas 
-                                INNER JOIN tabela_funcionarios 
-                                ON tabela_metas.funcionario_meta = tabela_funcionarios.id ORDER BY mes_meta ASC";
+                                  FROM tabela_metas 
+                                  INNER JOIN tabela_funcionarios 
+                                  ON tabela_metas.funcionario_meta = tabela_funcionarios.id ORDER BY mes_meta ASC";
                             $busca = $banco->query($q);
-
-
-
-                            // Lógica de listar todas as metas
 
                             if ($busca->num_rows > 0) {
                                 while ($reg = $busca->fetch_object()) {
@@ -252,7 +164,7 @@ if (isset($_POST['editar_meta'])) {
                                                         <i class="fa-regular fa-user"></i>
                                                     </div>
                                                     <div class="ms-3">
-                                                        <span class="d-block fw-semibold text-dark">' . $reg->nome . '</span>
+                                                        <span class="d-block fw-semibold text-dark">' . htmlspecialchars($reg->nome) . '</span>
                                                     </div>
                                                 </div>
                                             </td>
@@ -280,7 +192,8 @@ if (isset($_POST['editar_meta'])) {
 
                                                 <a href="?id=' . $reg->id . '" 
                                                     class="btn btn-sm btn-outline-danger rounded-pill" 
-                                                    title="Excluir">
+                                                    title="Excluir"
+                                                    onclick="return confirm(\'Tem certeza que deseja excluir esta meta?\')">
                                                     Excluir
                                                 </a>
                                             </td>
@@ -298,11 +211,7 @@ if (isset($_POST['editar_meta'])) {
     </div>
 
 
-
-
-
     <!-- Modal de cadastrar metas -->
-
     <div class="modal fade" id="modalCadastrar_meta" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -311,13 +220,8 @@ if (isset($_POST['editar_meta'])) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
-
-
                 <div class="modal-body py-4 px-4">
                     <form method="post">
-
-
-
                         <div class="mb-3 text-start">
                             <label class="form-label text-muted small fw-bold" for="id_funcionario">FUNCIONÁRIO <span class="text-danger">*</span></label>
                             <select class="form-select form-select-sm bg-light" id="id_funcionario" name="funcionario" required>
@@ -327,34 +231,28 @@ if (isset($_POST['editar_meta'])) {
                                 $busca = $banco->query($q);
                                 if ($busca->num_rows > 0) {
                                     while ($reg = $busca->fetch_object()) {
-                                        echo "<option value='$reg->id'>$reg->nome</option>";
+                                        echo "<option value='$reg->id'>" . htmlspecialchars($reg->nome) . "</option>";
                                     }
                                 }
                                 ?>
                             </select>
                         </div>
 
-
-
                         <div class="mb-3 text-start">
                             <label class="form-label text-muted small fw-bold" for="mes_meta">MÊS <span class="text-danger">*</span></label>
                             <input type="month" class="form-control bg-light" id="mes_meta" name="mes" required>
                         </div>
-
 
                         <div class="mb-3 text-start">
                             <label class="form-label text-muted small fw-bold" for="vlr_meta">VALOR DA META (R$) <span class="text-danger">*</span></label>
                             <input type="text" class="form-control bg-light" id="vlr_meta" name="meta" placeholder="0,00" required>
                         </div>
 
-
                         <div class="modal-footer border-top-0 justify-content-center">
                             <button type="submit" name="cadastrar_meta" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
                                 Salvar Meta
                             </button>
                         </div>
-
-
                     </form>
                 </div>
             </div>
@@ -362,10 +260,7 @@ if (isset($_POST['editar_meta'])) {
     </div>
 
 
-
     <!-- Modal de editar metas -->
-
-
     <div class="modal fade" id="modalEditar_meta" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -375,7 +270,6 @@ if (isset($_POST['editar_meta'])) {
                 </div>
                 <div class="modal-body py-4 px-4">
                     <form method="post">
-
                         <input type="hidden" name="id" id="id_edit">
 
                         <div class="mb-3 text-start">
@@ -383,50 +277,31 @@ if (isset($_POST['editar_meta'])) {
                             <input type="number" step="0.01" class="form-control bg-light" id="vlr_edit" name="vlr" required>
                         </div>
 
-
-
                         <div class="modal-footer border-top-0 justify-content-center">
                             <button type="submit" name="editar_meta" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Salvar Alterações</button>
                         </div>
-
-
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-
-
-
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
 
 </body>
 
 </html>
 
-
-
-
-
 <script>
     function carregarDados(botao) {
-
         var id = botao.getAttribute('data-id');
         var vlr = botao.getAttribute('data-valor');
 
         document.getElementById('id_edit').value = id;
         document.getElementById('vlr_edit').value = vlr;
-
     }
 </script>
-
-
-
-
 
 <script>
     var mensagem = "<?php echo $toast_mensagem; ?>";
@@ -434,8 +309,8 @@ if (isset($_POST['editar_meta'])) {
 
     if (mensagem) {
         var corFundo = tipo === "sucesso" ?
-            "linear-gradient(to right, #11998e, #38ef7d)" : // Verde (Sucesso)
-            "linear-gradient(to right, #ff416c, #ff4b2b)"; // Vermelho (Erro)
+            "linear-gradient(to right, #11998e, #38ef7d)" :
+            "linear-gradient(to right, #ff416c, #ff4b2b)"; 
 
         Toastify({
             text: mensagem,

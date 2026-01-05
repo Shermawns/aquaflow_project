@@ -1,5 +1,42 @@
 <?php
 session_start();
+
+require_once "../config/banco.php";
+require_once "../config/function.php";
+
+$toast_mensagem = "";
+$toast_tipo = "";
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $user = $_POST['usuario'] ?? '';
+    $pass = $_POST['senha'] ?? '';
+
+    if (empty($user) || empty($pass)) {
+        $toast_mensagem = "Erro: Preencha todos os campos obrigatórios!";
+        $toast_tipo = "erro";
+    } else {
+
+        $stmt = $banco->prepare("SELECT * FROM tabela_usuarios WHERE usuario = ?");
+        $stmt->bind_param("s", $user);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $reg = $result->fetch_object();
+            if (password_verify($pass, $reg->senha)) {
+                $_SESSION['usuario'] = $user;
+                header('location:../pages/main.php');
+                exit;
+            } else {
+                $toast_mensagem = "Senha incorreta!";
+                $toast_tipo = "erro";
+            }
+        } else {
+            $toast_mensagem = "Usuário não encontrado!";
+            $toast_tipo = "erro";
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -13,72 +50,6 @@ session_start();
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="../assets/style.css">
 </head>
-
-
-<?php
-// session_start(); removido daqui, movido para o topo
-
-require_once "../config/banco.php";
-require_once "../config/function.php";
-
-$toast_mensagem = "";
-$toast_tipo = "";
-
-$user = $_POST['usuario'] ?? null;
-$pass = $_POST['senha'] ?? null;
-
-if(isset($_POST['usuario']) && (empty($user)) && (empty($pass))){
-    $toast_mensagem = "Erro: Preencha todos os campos obrigatórios!";
-    $toast_tipo = "erro";
-
-<<<<<<< HEAD
-if (!is_null($user) && !is_null($pass)) {
-    $user = $_POST['usuario'];
-    $pass = $_POST['senha'];
-
-    if (empty($user) || empty($pass)) {
-        $toast_mensagem = "Preencha todos os campos!";
-        $toast_tipo = "erro";
-    } else {
-        $q = "SELECT * FROM tabela_usuarios WHERE usuario = '$user'";
-        $busca = $banco->query($q);
-
-        if ($busca->num_rows > 0) {
-            $reg = $busca->fetch_object();
-            if (password_verify($pass, $reg->senha)) {
-                $_SESSION['usuario'] = $user;
-                header('location:../pages/vendas.php');
-            } else {
-                $toast_mensagem = "Senha incorreta!";
-                $toast_tipo = "erro";
-            }
-=======
-} elseif (!is_null($user) && !is_null($pass)) {
-    $stmt = $banco->prepare("SELECT usuario, senha FROM tabela_usuarios WHERE usuario = ?");
-    
-    $stmt->bind_param("s", $user);
-    
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-
-    if ($resultado->num_rows > 0) {
-
-        $reg = $resultado->fetch_object();
-        
-        if (testarHash($pass, $reg->senha)) {
-            $_SESSION['usuario'] = $reg->usuario;
-            $toast_mensagem = "Bem vindo novamente " . $user;
-            "!";
-            $toast_tipo = "sucesso";
-            header('location: ../pages/main.php');
->>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
-        } else {
-            $toast_mensagem = "Usuário não encontrado!";
-            $toast_tipo = "erro";
-        }
-    }
-}
-?>
 
 <body>
     <div class="d-flex align-items-center justify-content-center min-vh-100">

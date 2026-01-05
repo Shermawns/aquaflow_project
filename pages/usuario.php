@@ -1,10 +1,3 @@
-<?php
-session_start();
-if (!isset($_SESSION['usuario'])) {
-    header("location: ../login/login.php");
-    exit;
-}
-?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -20,69 +13,25 @@ if (!isset($_SESSION['usuario'])) {
 
 <body>
     <?php
+session_start();
+if (!isset($_SESSION['usuario'])) {
+    header("location: ../login/login.php");
+    exit;
+}
 
-    require_once "../config/banco.php";
-    require_once "../config/function.php";
-    require "../includes/header.php";
+require_once "../config/banco.php";
+require_once "../config/function.php";
+require "../includes/header.php";
 
-    $toast_mensagem = "";
-    $toast_tipo = "";
+$toast_mensagem = "";
+$toast_tipo = "";
 
-    ?>
-
-
-
-
-
-    <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
-            <div>
-                <h2 class="fw-bold mb-1" style="color: #0d6efd;">Usuários</h2>
-                <p class="text-muted mb-0">Gerencie o acesso ao sistema</p>
-            </div>
-            <button type="button" class="btn btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCadastrar">
-                <i class="fa-solid fa-plus me-2"></i>Cadastrar Usuário
-            </button>
-        </div>
-
-
-
-
-
-
-        <!-- Lógica de registro-->
-
-<?php
-
+// LÓGICA DE CADASTRO
 if (isset($_POST['usuario']) && !isset($_POST['editar_usuario'])) {
     $user = $_POST['usuario'];
     $pass = $_POST['senha'];
     $confpass = $_POST['confirmar'];
 
-<<<<<<< HEAD
-            if (empty($user) || empty($pass) || empty($confpass)) {
-                $toast_mensagem = "Erro: Preencha todos os campos!";
-                $toast_tipo = "erro";
-            } else {
-                $q = "SELECT usuario FROM tabela_usuarios WHERE usuario = '$user'";
-                $busca = $banco->query($q);
-
-                if ($busca->num_rows > 0) {
-                    $toast_mensagem = "Erro: Usuário já cadastrado!";
-                    $toast_tipo = "erro";
-                } else {
-                    if ($pass == $confpass) {
-                        $hash = gerarHash($pass);
-
-                        $banco->query("INSERT INTO tabela_usuarios (usuario, senha) VALUES ('$user', '$hash')");
-                        $toast_mensagem = "Usuário cadastrado com sucesso!";
-                        $toast_tipo = "sucesso";
-                    } else {
-                        $toast_mensagem = "Erro: As senhas não conferem!";
-                        $toast_tipo = "erro";
-                    }
-                }
-=======
     $stmt = $banco->prepare("SELECT usuario FROM tabela_usuarios WHERE usuario = ?");
     $stmt->bind_param("s", $user);
     $stmt->execute();
@@ -93,14 +42,13 @@ if (isset($_POST['usuario']) && !isset($_POST['editar_usuario'])) {
     } else {
         if ($pass === $confpass) {
             $hash = gerarHash($pass);
-            
+
             $stmt_in = $banco->prepare("INSERT INTO tabela_usuarios (usuario, senha) VALUES (?, ?)");
             $stmt_in->bind_param("ss", $user, $hash);
-            
+
             if ($stmt_in->execute()) {
                 $toast_mensagem = "Usuário cadastrado com sucesso!";
                 $toast_tipo = "success";
->>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
             }
         } else {
             $toast_mensagem = "Erro: As senhas não conferem!";
@@ -109,83 +57,50 @@ if (isset($_POST['usuario']) && !isset($_POST['editar_usuario'])) {
     }
 }
 
-
+// LÓGICA DE EDIÇÃO
 if (isset($_POST['editar_usuario'])) {
     $id = $_POST['id_edit'];
     $user = $_POST['usuario_edit'];
     $pass = $_POST['senha_edit'];
     $conf = $_POST['confirmar_edit'];
 
-<<<<<<< HEAD
-
-
-
-        <!-- Lógica de editar usuário -->
-
-        <?php
-        if (isset($_POST['editar_usuario'])) {
-            $id = $_POST['id_edit'];
-            $user = $_POST['usuario_edit'];
-            $pass = $_POST['senha_edit'];
-            $conf = $_POST['confirmar_edit'];
-
-            if (empty($user)) {
-                $toast_mensagem = "Erro: O nome de usuário não pode ser vazio!";
-                $toast_tipo = "erro";
-            } else {
-                if (empty($pass)) {
-                    $q = "UPDATE tabela_usuarios SET usuario = '$user' WHERE id = '$id'";
-                    $banco->query($q);
-                    $toast_mensagem = "Usuário editado com sucesso!";
-                    $toast_tipo = "sucesso";
-                    // echo "<meta http-equiv='refresh' content='0'>"; // Removido para mostrar o Toast
-                } else {
-                    if ($pass == $conf) {
-                        $hash = gerarHash($pass);
-                        $q = "UPDATE tabela_usuarios SET usuario = '$user', senha = '$hash' WHERE id = '$id'";
-                        $banco->query($q);
-                        $toast_mensagem = "Usuário editado com sucesso!";
-                        $toast_tipo = "sucesso";
-                        // echo "<meta http-equiv='refresh' content='0'>"; // Removido
-                    } else {
-                        $toast_mensagem = "Erro: As senhas da edição não conferem!";
-                        $toast_tipo = "erro";
-                    }
-                }
-            }
-=======
     if (empty($pass)) {
         $stmt = $banco->prepare("UPDATE tabela_usuarios SET usuario = ? WHERE id = ?");
         $stmt->bind_param("si", $user, $id);
+        if ($stmt->execute()) {
+            $toast_mensagem = "Dados alterados com sucesso!";
+            $toast_tipo = "success";
+        }
     } else {
         if ($pass === $conf) {
             $hash = gerarHash($pass);
             $stmt = $banco->prepare("UPDATE tabela_usuarios SET usuario = ?, senha = ? WHERE id = ?");
             $stmt->bind_param("ssi", $user, $hash, $id);
-            $toast_mensagem = "Dados alterados com sucesso!";
-            $toast_tipo = "success";
+            if ($stmt->execute()) {
+                $toast_mensagem = "Dados alterados com sucesso!";
+                $toast_tipo = "success";
+            }
         } else {
             $toast_mensagem = "Erro: As senhas não conferem!";
             $toast_tipo = "erro";
->>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
         }
     }
 }
 
-
+// LÓGICA DE EXCLUSÃO
 if (isset($_GET['id'])) {
     $id_del = $_GET['id'];
 
     $stmt = $banco->prepare("SELECT usuario FROM tabela_usuarios WHERE id = ?");
     $stmt->bind_param("i", $id_del);
     $stmt->execute();
-    $res = $stmt_busca->get_result()->fetch_object();
+    $res = $stmt->get_result()->fetch_object();
 
     if ($res) {
-        $usuario = $res->usuario;
+        $usuario_alvo = $res->usuario;
         $stmt_del = $banco->prepare("DELETE FROM tabela_usuarios WHERE id = ?");
         $stmt_del->bind_param("i", $id_del);
-        
+
         if ($stmt_del->execute()) {
             if ($usuario_alvo === $_SESSION['usuario']) {
                 session_destroy();
@@ -199,11 +114,18 @@ if (isset($_GET['id'])) {
 }
 ?>
 
-
-
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+            <div>
+                <h2 class="fw-bold mb-1" style="color: #0d6efd;">Usuários</h2>
+                <p class="text-muted mb-0">Gerencie o acesso ao sistema</p>
+            </div>
+            <button type="button" class="btn btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCadastrar">
+                <i class="fa-solid fa-plus me-2"></i>Cadastrar Usuário
+            </button>
+        </div>
 
         <!-- Caixa onde fica os usuários listados-->
-
         <div class="card border-0 rounded-4 overflow-hidden">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -215,10 +137,7 @@ if (isset($_GET['id'])) {
                             </tr>
                         </thead>
 
-
-
                         <!-- Lógica de listar todos os usuários -->
-
                         <?php
                         $q = "SELECT * FROM tabela_usuarios";
                         $busca = $banco->query($q);
@@ -233,15 +152,13 @@ if (isset($_GET['id'])) {
                                                     <i class="fa-regular fa-user"></i>
                                                 </div>
                                                 <div>
-                                                    <h6 class="mb-0 fw-semibold">' . $reg->usuario . '</h6>
+                                                    <h6 class="mb-0 fw-semibold">' . htmlspecialchars($reg->usuario) . '</h6>
                                                 </div>
                                             </div>
                                         </td>
 
                                         <!-- Botões de editar e excluir -->
-
                                         <td class="pe-4 text-end">
-                                            
                                             <input type="button" 
                                                 class="btn btn-sm btn-outline-primary rounded-pill me-1" 
                                                 value="Editar" 
@@ -249,7 +166,7 @@ if (isset($_GET['id'])) {
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#modalEditar_func"
                                                 data-id="' . $reg->id . '"
-                                                data-usuario="' . $reg->usuario . '"
+                                                data-usuario="' . htmlspecialchars($reg->usuario) . '"
                                                 onclick="carregarDadosEdicao(this)">
                                             
                                             <input type="button" 
@@ -257,8 +174,6 @@ if (isset($_GET['id'])) {
                                                 value="Excluir" 
                                                 onclick="window.location.href=\'usuario.php?id=' . $reg->id . '\'">
                                         </td>
-
-
                                     </tr>';
                             }
                             echo '</tbody>';
@@ -266,16 +181,12 @@ if (isset($_GET['id'])) {
                             echo '<tbody><tr><td colspan="2" class="text-center">Nenhum usuário cadastrado.</td></tr></tbody>';
                         }
                         ?>
-
-
-
                     </table>
                 </div>
             </div>
         </div>
 
         <!-- Modal de editar usuário -->
-
         <div class="modal fade" id="modalEditar_func" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
@@ -284,16 +195,13 @@ if (isset($_GET['id'])) {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
-
-
                     <!-- Formulário de ediçao -->
-
                     <div class="modal-body py-4 px-4">
                         <form method="post">
                             <input type="hidden" name="id_edit" id="id_edit">
 
                             <div class="mb-3 text-start">
-                                <label class="form-label text-muted small fw-bold">USUÁRIO <span class="text-danger">*</span></label>
+                                <label class="form-label text-muted small fw-bold">USUÁRIO</label>
                                 <input type="text" class="form-control bg-light" id="usuario_edit" name="usuario_edit" maxlength="50" required>
                             </div>
 
@@ -312,16 +220,11 @@ if (isset($_GET['id'])) {
                             </div>
                         </form>
                     </div>
-
-
-
                 </div>
             </div>
         </div>
 
-
         <!-- Modal de cadastro de usuarios  -->
-
         <div class="modal fade" id="modalCadastrar" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
@@ -331,11 +234,10 @@ if (isset($_GET['id'])) {
                     </div>
 
                     <!-- Campo de usuário -->
-
                     <div class="modal-body py-4 px-4">
                         <form method="post">
                             <div class="mb-3 text-start">
-                                <label for="user" class="form-label text-muted small fw-bold">USUÁRIO <span class="text-danger">*</span></label>
+                                <label for="user" class="form-label text-muted small fw-bold">USUÁRIO</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0 text-primary">
                                         <i class="fa-solid fa-user"></i>
@@ -346,9 +248,8 @@ if (isset($_GET['id'])) {
 
 
                             <!-- Campo de senha  -->
-
                             <div class="mb-3 text-start">
-                                <label for="pass" class="form-label text-muted small fw-bold">SENHA <span class="text-danger">*</span></label>
+                                <label for="pass" class="form-label text-muted small fw-bold">SENHA</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0 text-primary">
                                         <i class="fa-solid fa-lock"></i>
@@ -358,9 +259,8 @@ if (isset($_GET['id'])) {
                             </div>
 
                             <!-- Campo de confirmar senha -->
-
                             <div class="mb-4 text-start">
-                                <label for="confirm" class="form-label text-muted small fw-bold">CONFIRMAR SENHA <span class="text-danger">*</span></label>
+                                <label for="confirm" class="form-label text-muted small fw-bold">CONFIRMAR SENHA</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0 text-primary">
                                         <i class="fa-solid fa-check-double"></i>
@@ -370,11 +270,9 @@ if (isset($_GET['id'])) {
                             </div>
 
                             <!-- Botão submit -->
-
                             <div class="modal-footer border-top-0 justify-content-center">
                                 <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">Cadastrar</button>
                             </div>
-
                         </form>
                     </div>
                 </div>
@@ -389,7 +287,6 @@ if (isset($_GET['id'])) {
 
 <script>
     // Função para preencher o modal de edição
-
     function carregarDadosEdicao(botao) {
         var id = botao.getAttribute('data-id');
         var usuario = botao.getAttribute('data-usuario');
@@ -404,15 +301,9 @@ if (isset($_GET['id'])) {
     var tipo = "<?php echo $toast_tipo; ?>";
 
     if (mensagem) {
-<<<<<<< HEAD
-        var corFundo = tipo === "sucesso" ?
-            "linear-gradient(to right, #11998e, #38ef7d)" :
-            "linear-gradient(to right, #ff416c, #ff4b2b)";
-=======
         var corFundo = tipo === "success" ?
             "linear-gradient(to right, #00b09b, #2cabd1ff)" :
             "linear-gradient(to right, #ff5f6d, #e562f7ff)";
->>>>>>> dbf2c8fa79d338be7ff146eb97e2cda7785e611f
 
         Toastify({
             text: mensagem,
