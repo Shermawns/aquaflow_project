@@ -35,31 +35,32 @@
     <!-- Lógica de editar produtos -->
 
 
-    <?php
-    if (isset($_POST['editar_produto'])) {
+<?php
+if (isset($_POST['editar_produto'])) {
 
-        $id    = $_POST['id'];
-        $name  = $_POST['produto'];
-        $preco = $_POST['preco'];
-        $qtd   = $_POST['qtd'];
+    $id    = $_POST['id'];
+    $name  = $_POST['produto'];
+    $preco = $_POST['preco'];
+    $qtd   = $_POST['qtd'];
 
-        $preco = str_replace(',', '.', $preco);
+ 
+    $preco = str_replace(',', '.', $preco);
 
+    $stmt = $banco->prepare("SELECT qtd_estoque, vlr_unitario FROM tabela_produtos WHERE id = ?");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
 
-        $stmt = $banco->prepare ( "SELECT qtd_estoque FROM tabela_produtos WHERE id = ?");
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        $resultado = $stmt->get_result();
-
-        $produto_at = $resultado->fetch_object();
+    $produto_at = $resultado->fetch_object();
+    
+    if ($produto_at) {
         $produto_bd = $produto_at->qtd_estoque;
 
-        $produto_p = $produto_at->vlr_unitario;
-
-        if ($qtd < $produto_bd) {
+        if ($qtd < $produto_bd) { 
             $toast_mensagem = "Erro: A quantidade não pode ser menor que o estoque atual!";
             $toast_tipo = "erro";
-        }if($produto_p <= 0 ){
+        
+        } elseif ($preco <= 0) { 
             $toast_mensagem = "Erro: O preço não pode ser menor que zero!";
             $toast_tipo = "erro";
         } else {
@@ -67,8 +68,10 @@
                 $toast_mensagem = "Erro: Preencha todos os campos!";
                 $toast_tipo = "erro";
             } else {
-                $sql = "UPDATE tabela_produtos SET nome_produto = '$name', vlr_unitario = '$preco', qtd_estoque = '$qtd' WHERE id = '$id'";
-                if ($banco->query($sql)) {
+                $stmt_up = $banco->prepare("UPDATE tabela_produtos SET nome_produto = ?, vlr_unitario = ?, qtd_estoque = ? WHERE id = ?");
+                $stmt_up->bind_param("sdii", $name, $preco, $qtd, $id);
+
+                if ($stmt_up->execute()) {
                     $toast_mensagem = "Produto atualizado com sucesso!";
                     $toast_tipo = "sucesso";
                 } else {
@@ -77,8 +80,12 @@
                 }
             }
         }
+    } else {
+        $toast_mensagem = "Produto não encontrado!";
+        $toast_tipo = "erro";
     }
-    ?>
+}
+?>
 
 
 
@@ -168,7 +175,7 @@
 
 
                             <?php
-                            $q = "SELECT * FROM tabela_produtos ORDER BY nome_produto";
+                            $q = "SELECT * FROM tabela_produtos ORDER BY qtd_estoque DESC";
                             $busca = $banco->query($q);
 
                             if ($busca->num_rows > 0) {

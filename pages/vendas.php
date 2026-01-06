@@ -92,76 +92,69 @@ if (isset($_POST['registrar_venda'])) {
             </button>
         </div>
 
-        <div class="card border-0 rounded-4 overflow-hidden">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
-                        <thead class="bg-light border-bottom">
-                            <tr>
-                                <th class="ps-4 py-3 text-secondary border-0" style="width: 14%;">Qtd Vendida</th>
-                                <th class="py-3 text-secondary border-0" style="width: 35%;">Funcionário</th>
-                                <th class="py-3 text-secondary border-0" style="width: 20%;">Data</th>
-                                <th class="py-3 text-secondary border-0" style="width: 35%;">Produto</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <div class="card border-0 rounded-4 overflow-hidden">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="bg-light border-bottom">
+                                <tr>
+                                    <th class="py-3 text-secondary border-0" style="width: 35%;">Funcionário</th>
+                                    <th class="py-3 text-secondary border-0" style="width: 20%;">Data</th>
+                                    <th class="py-3 text-secondary border-0" style="width: 35%;">Produtos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
 
-                            <?php
-                            $q = "SELECT 
-                                        tabela_vendas_produtos.qtd_vendido,
+                                <?php
+                                $q = "SELECT 
+                                        SUM(tabela_vendas_produtos.qtd_vendido) as total_itens,
                                         tabela_funcionarios.nome AS funcionario_vendas,
                                         tabela_vendas.data_venda,
-                                        tabela_produtos.nome_produto AS id_produto
-                                    FROM tabela_vendas
-                                    INNER JOIN tabela_funcionarios ON tabela_vendas.funcionario_vendas = tabela_funcionarios.id
-                                    INNER JOIN tabela_vendas_produtos ON tabela_vendas.id = tabela_vendas_produtos.id_venda
-                                    INNER JOIN tabela_produtos ON tabela_vendas_produtos.id_produto = tabela_produtos.id
-                                    ORDER BY tabela_vendas_produtos.qtd_vendido DESC";
+                                        GROUP_CONCAT(CONCAT('<small class=\"fw-bold text-primary\">', tabela_vendas_produtos.qtd_vendido, 'x</small> ', tabela_produtos.nome_produto) SEPARATOR '<br>') AS lista_produtos
+                                        FROM tabela_vendas
+                                        INNER JOIN tabela_funcionarios ON tabela_vendas.funcionario_vendas = tabela_funcionarios.id
+                                        INNER JOIN tabela_vendas_produtos ON tabela_vendas.id = tabela_vendas_produtos.id_venda
+                                        INNER JOIN tabela_produtos ON tabela_vendas_produtos.id_produto = tabela_produtos.id
+                                        GROUP BY tabela_vendas.id 
+                                        ORDER BY tabela_vendas.data_venda DESC";
 
-                            $busca = $banco->query($q);
+                                $busca = $banco->query($q);
 
-                            // Lógica de listar todas as vendas
-
-                            if ($busca->num_rows > 0) {
-                                while ($reg = $busca->fetch_object()) {
-                                    echo '<tr>
-                                            <td class="align-middle ps-4">
-                                                <span class="badge bg-light text-secondary px-1 py-4">
-                                                    <i class="fa-solid fa-layer-group me-1"></i> ' . $reg->qtd_vendido . ' un.
-                                                </span>
-                                            </td>
-                                            
-                                            <td class="align-middle">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                                        <i class="fa-regular fa-user"></i>
+                                if ($busca->num_rows > 0) {
+                                    while ($reg = $busca->fetch_object()) {
+                                        echo '<tr>
+                                                
+                                                <td class="align-middle">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                            <i class="fa-regular fa-user"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-0 fw-semibold text-dark">' . $reg->funcionario_vendas . '</h6>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <h6 class="mb-0 fw-semibold text-dark">' . $reg->funcionario_vendas . '</h6>
-                                                    </div>
-                                                </div>
-                                            </td>
+                                                </td>
 
-                                            <td class="align-middle text-muted fw-medium">
-                                                <i class="fa-regular fa-calendar me-1"></i> ' . date('d/m/Y', strtotime($reg->data_venda)) . '
-                                            </td>
+                                                <td class="align-middle text-muted fw-medium">
+                                                    <i class="fa-regular fa-calendar me-1"></i> ' . date('d/m/Y', strtotime($reg->data_venda)) . '
+                                                </td>
 
-                                             <td class="align-middle text-muted fw-medium">
-                                                <span class="d-block fw-semibold text-dark">' . $reg->id_produto . '</span>
-                                            </td>
+                                                <td class="align-middle text-muted fw-medium">
+                                                    <span class="d-block text-dark" style="line-height: 1.6;">' . $reg->lista_produtos . '</span>
+                                                </td>
 
-                                            </tr>';
+                                                </tr>';
+                                    }
+                                } else {
+                                    echo '<tr><td colspan="4" class="text-center p-3">Nenhuma venda registrada.</td></tr>';
                                 }
-                            } else {
-                                echo '<tr><td colspan="4" class="text-center p-3">Nenhuma venda registrada.</td></tr>';
-                            }
-                            ?>
-                        </tbody>
-                    </table>
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
+            </div>
 
 
     <div class="modal fade" id="modalCadastrar_venda" tabindex="-1" aria-hidden="true">

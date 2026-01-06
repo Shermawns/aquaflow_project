@@ -105,8 +105,14 @@ if (isset($_POST['editar_meta'])) {
     if (empty($vlr) && $vlr !== '0') {
         $toast_mensagem = "Erro: O valor da meta não pode ser vazio!";
         $toast_tipo = "erro";
+
+    } elseif ($vlr < 0) {
+        $toast_mensagem = "Erro: O valor da meta não pode ser negativo!";
+        $toast_tipo = "erro";
+
     } else {
         $stmt_upd = $banco->prepare("UPDATE tabela_metas SET vlr_meta = ? WHERE id = ?");
+
         $stmt_upd->bind_param("di", $vlr, $id);
 
         if ($stmt_upd->execute()) {
@@ -149,17 +155,16 @@ if (isset($_POST['editar_meta'])) {
                         <tbody>
                             <!-- Lógica de capturar o nome do funcionário e listar metas -->
                             <?php
-                            $q = "SELECT tabela_metas.*, tabela_funcionarios.nome 
-                                  FROM tabela_metas 
-                                  INNER JOIN tabela_funcionarios 
-                                  ON tabela_metas.funcionario_meta = tabela_funcionarios.id ORDER BY mes_meta ASC";
+                            $q = "SELECT tabela_metas.*, tabela_funcionarios.nome FROM tabela_metas INNER JOIN tabela_funcionarios 
+                                ON tabela_metas.funcionario_meta = tabela_funcionarios.id  WHERE tabela_funcionarios.data_demissao IS NULL
+                                ORDER BY tabela_metas.mes_meta ASC";
                             $busca = $banco->query($q);
 
                             if ($busca->num_rows > 0) {
                                 while ($reg = $busca->fetch_object()) {
                                     echo '<tr>
                                             <td class="align-middle ps-4">
-                                                <div class="d-flex align-items-center">
+                                                <div class="d-flex align-items-center"> 
                                                     <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;">
                                                         <i class="fa-regular fa-user"></i>
                                                     </div>
@@ -192,8 +197,7 @@ if (isset($_POST['editar_meta'])) {
 
                                                 <a href="?id=' . $reg->id . '" 
                                                     class="btn btn-sm btn-outline-danger rounded-pill" 
-                                                    title="Excluir"
-                                                    onclick="return confirm(\'Tem certeza que deseja excluir esta meta?\')">
+                                                    title="Excluir">
                                                     Excluir
                                                 </a>
                                             </td>
