@@ -92,22 +92,24 @@ if (isset($_POST['registrar_venda'])) {
             </button>
         </div>
 
-            <div class="card border-0 rounded-4 overflow-hidden">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0 align-middle">
-                            <thead class="bg-light border-bottom">
-                                <tr>
-                                    <th class="py-3 text-secondary border-0" style="width: 35%;">Funcionário</th>
-                                    <th class="py-3 text-secondary border-0" style="width: 20%;">Data</th>
-                                    <th class="py-3 text-secondary border-0" style="width: 35%;">Produtos</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+        <div class="card border-0 rounded-4 overflow-hidden">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light border-bottom">
+                            <tr>
+                                <th class="py-3 text-secondary border-0" style="width: 35%;">Funcionário</th>
+                                <th class="py-3 text-secondary border-0" style="width: 20%;">Data</th>
+                                <th class="py-3 text-secondary border-0" style="width: 25%;">Produtos</th>
+                                <th class="py-3 text-secondary border-0" style="width: 20%;">Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
 
-                                <?php
-                                $q = "SELECT 
+                            <?php
+                            $q = "SELECT 
                                         SUM(tabela_vendas_produtos.qtd_vendido) as total_itens,
+                                        SUM(tabela_vendas_produtos.qtd_vendido * tabela_produtos.vlr_unitario) as valor_total_venda,
                                         tabela_funcionarios.nome AS funcionario_vendas,
                                         tabela_vendas.data_venda,
                                         GROUP_CONCAT(CONCAT('<small class=\"fw-bold text-primary\">', tabela_vendas_produtos.qtd_vendido, 'x</small> ', tabela_produtos.nome_produto) SEPARATOR '<br>') AS lista_produtos
@@ -118,11 +120,11 @@ if (isset($_POST['registrar_venda'])) {
                                         GROUP BY tabela_vendas.id 
                                         ORDER BY tabela_vendas.data_venda DESC";
 
-                                $busca = $banco->query($q);
+                            $busca = $banco->query($q);
 
-                                if ($busca->num_rows > 0) {
-                                    while ($reg = $busca->fetch_object()) {
-                                        echo '<tr>
+                            if ($busca->num_rows > 0) {
+                                while ($reg = $busca->fetch_object()) {
+                                    echo '<tr>
                                                 
                                                 <td class="align-middle">
                                                     <div class="d-flex align-items-center">
@@ -143,18 +145,23 @@ if (isset($_POST['registrar_venda'])) {
                                                     <span class="d-block text-dark" style="line-height: 1.6;">' . $reg->lista_produtos . '</span>
                                                 </td>
 
+                                                <td class="align-middle">
+                                                    <small class="text-muted">R$</small> 
+                                                    <span class="fw-bold text-success">' . number_format($reg->valor_total_venda, 2, ',', '.') . '</span>
+                                                </td>
+
                                                 </tr>';
-                                    }
-                                } else {
-                                    echo '<tr><td colspan="4" class="text-center p-3">Nenhuma venda registrada.</td></tr>';
                                 }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
+                            } else {
+                                echo '<tr><td colspan="4" class="text-center p-3">Nenhuma venda registrada.</td></tr>';
+                            }
+                            ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            </div>
+        </div>
+    </div>
 
 
     <div class="modal fade" id="modalCadastrar_venda" tabindex="-1" aria-hidden="true">
@@ -179,7 +186,7 @@ if (isset($_POST['registrar_venda'])) {
                                             <?php
                                             $q = "SELECT * FROM tabela_funcionarios WHERE data_demissao IS NULL ORDER BY nome";
                                             $busca = $banco->query($q);
-                                            $busca->data_seek(0); 
+                                            $busca->data_seek(0);
                                             while ($reg = $busca->fetch_object()) {
                                                 echo "<option value='$reg->id'>$reg->nome</option>";
                                             }
@@ -266,8 +273,8 @@ if (isset($_POST['registrar_venda'])) {
 
     if (mensagem) {
         var corFundo = tipo === "sucesso" ?
-            "linear-gradient(to right, #11998e, #38ef7d)" : 
-            "linear-gradient(to right, #ff416c, #ff4b2b)"; 
+            "linear-gradient(to right, #11998e, #38ef7d)" :
+            "linear-gradient(to right, #ff416c, #ff4b2b)";
 
         Toastify({
             text: mensagem,

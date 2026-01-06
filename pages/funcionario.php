@@ -13,92 +13,92 @@
 
 <body>
 
-<?php
-session_start();
-if (!isset($_SESSION['usuario'])) {
-    header("location: ../login/login.php");
-    exit;
-}
+    <?php
+    session_start();
+    if (!isset($_SESSION['usuario'])) {
+        header("location: ../login/login.php");
+        exit;
+    }
 
-require_once "../config/banco.php";
-require_once "../config/function.php";
+    require_once "../config/banco.php";
+    require_once "../config/function.php";
 
-$toast_mensagem = "";
-$toast_tipo = "";
+    $toast_mensagem = "";
+    $toast_tipo = "";
 
-// Lógica de cadastrar funcionario
-if (isset($_POST['cpf'])) {
-    $cpf = $_POST['cpf'];
-    $nome = $_POST['nome'];
+    // Lógica de cadastrar funcionario
+    if (isset($_POST['cpf'])) {
+        $cpf = $_POST['cpf'];
+        $nome = $_POST['nome'];
 
-    if (empty($cpf) || empty($nome)) {
-        $toast_mensagem = "Erro: Preencha todos os campos!";
-        $toast_tipo = "erro";
-    } else {
-        $q = "SELECT cpf FROM tabela_funcionarios WHERE cpf = '$cpf'";
-        $busca = $banco->query($q);
-
-        if ($busca->num_rows > 0) {
-            $toast_mensagem = "Erro: Funcionário já cadastrado!";
+        if (empty($cpf) || empty($nome)) {
+            $toast_mensagem = "Erro: Preencha todos os campos!";
             $toast_tipo = "erro";
         } else {
-            $admissao = date('Y-m-d');
-            if ($banco->query("INSERT INTO tabela_funcionarios (cpf, nome, data_contratacao) VALUES ('$cpf', '$nome', '$admissao')")) {
-                $toast_mensagem = "Funcionário cadastrado com sucesso!";
+            $q = "SELECT cpf FROM tabela_funcionarios WHERE cpf = '$cpf'";
+            $busca = $banco->query($q);
+
+            if ($busca->num_rows > 0) {
+                $toast_mensagem = "Erro: Funcionário já cadastrado!";
+                $toast_tipo = "erro";
+            } else {
+                $admissao = date('Y-m-d');
+                if ($banco->query("INSERT INTO tabela_funcionarios (cpf, nome, data_contratacao) VALUES ('$cpf', '$nome', '$admissao')")) {
+                    $toast_mensagem = "Funcionário cadastrado com sucesso!";
+                    $toast_tipo = "sucesso";
+                } else {
+                    $toast_mensagem = "Erro ao cadastrar funcionário!";
+                    $toast_tipo = "erro";
+                }
+            }
+        }
+    }
+
+    // Lógica de editar funcionario
+    if (isset($_POST['editar_funcionario'])) {
+        $id = $_POST['id_edit'];
+        $nome = $_POST['nome_edit'];
+        if (empty($nome)) {
+            $toast_mensagem = "Erro: O nome não pode ser vazio!";
+            $toast_tipo = "erro";
+        } else {
+            $q = "UPDATE tabela_funcionarios SET nome = '$nome' WHERE id = '$id'";
+            if ($banco->query($q)) {
+                $toast_mensagem = "Dados do funcionário atualizados!";
                 $toast_tipo = "sucesso";
             } else {
-                $toast_mensagem = "Erro ao cadastrar funcionário!";
+                $toast_mensagem = "Erro ao atualizar funcionário!";
                 $toast_tipo = "erro";
             }
         }
     }
-}
 
-// Lógica de editar funcionario
-if (isset($_POST['editar_funcionario'])) {
-    $id = $_POST['id_edit'];
-    $nome = $_POST['nome_edit'];
-    if (empty($nome)) {
-        $toast_mensagem = "Erro: O nome não pode ser vazio!";
-        $toast_tipo = "erro";
-    } else {
-        $q = "UPDATE tabela_funcionarios SET nome = '$nome' WHERE id = '$id'";
+    // Lógica de desligamento
+    if (isset($_POST['desligar-funcionario'])) {
+        $id = $_POST['id_desligamento'];
+        $q = "UPDATE tabela_funcionarios SET data_demissao = NOW() WHERE id = '$id'";
         if ($banco->query($q)) {
-            $toast_mensagem = "Dados do funcionário atualizados!";
+            $toast_mensagem = "Funcionário desligado com sucesso!";
             $toast_tipo = "sucesso";
         } else {
-            $toast_mensagem = "Erro ao atualizar funcionário!";
+            $toast_mensagem = "Erro ao desligar funcionário!";
             $toast_tipo = "erro";
         }
     }
-}
 
-// Lógica de desligamento
-if (isset($_POST['desligar-funcionario'])) {
-    $id = $_POST['id_desligamento'];
-    $q = "UPDATE tabela_funcionarios SET data_demissao = NOW() WHERE id = '$id'";
-    if ($banco->query($q)) {
-        $toast_mensagem = "Funcionário desligado com sucesso!";
-        $toast_tipo = "sucesso";
-    } else {
-        $toast_mensagem = "Erro ao desligar funcionário!";
-        $toast_tipo = "erro";
+    // Lógica de ativação
+    if (isset($_POST['ativar-funcionario'])) {
+        $id = $_POST['id_ativar'];
+        $q = "UPDATE tabela_funcionarios SET data_demissao = NULL WHERE id = '$id'";
+        if ($banco->query($q)) {
+            $toast_mensagem = "Funcionário reativado com sucesso!";
+            $toast_tipo = "sucesso";
+        } else {
+            $toast_mensagem = "Erro ao reativar funcionário!";
+            $toast_tipo = "erro";
+        }
     }
-}
-
-// Lógica de ativação
-if (isset($_POST['ativar-funcionario'])) {
-    $id = $_POST['id_ativar'];
-    $q = "UPDATE tabela_funcionarios SET data_demissao = NULL WHERE id = '$id'";
-    if ($banco->query($q)) {
-        $toast_mensagem = "Funcionário reativado com sucesso!";
-        $toast_tipo = "sucesso";
-    } else {
-        $toast_mensagem = "Erro ao reativar funcionário!";
-        $toast_tipo = "erro";
-    }
-}
-?>
+    ?>
     <?php require "../includes/header.php"; ?>
 
     <div class="container py-5">
@@ -248,6 +248,7 @@ if (isset($_POST['ativar-funcionario'])) {
                                     <th>Data</th>
                                     <th>Produto</th>
                                     <th>Qtd</th>
+                                    <th>Valor</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -408,13 +409,12 @@ if (isset($_POST['ativar-funcionario'])) {
         document.getElementById('visualizar_cpf').value = cpf;
         document.getElementById('visualizar_contratacao').value = contratacao ? contratacao : "";
 
-        // Limpar tabelas
         const tbodyMetas = document.querySelector('#tabela_metas_func tbody');
         const tbodyVendas = document.querySelector('#tabela_vendas_func tbody');
         tbodyMetas.innerHTML = '<tr><td colspan="2" class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Carregando...</td></tr>';
         tbodyVendas.innerHTML = '<tr><td colspan="3" class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Carregando...</td></tr>';
 
-       
+
         const formData = new FormData();
         formData.append('id', id);
 
@@ -426,6 +426,17 @@ if (isset($_POST['ativar-funcionario'])) {
             .then(data => {
                 tbodyMetas.innerHTML = '';
                 tbodyVendas.innerHTML = '';
+
+                let containerTotal = document.getElementById('total_vendas_container');
+                if (!containerTotal) {
+                    const h6 = document.createElement('h6');
+                    h6.id = 'total_vendas_container';
+                    h6.className = 'fw-bold text-success mt-3';
+                    document.querySelector('#tabela_vendas_func').parentNode.after(h6);
+                    containerTotal = h6;
+                }
+                containerTotal.innerHTML = `Total das vendas: R$ ${parseFloat(data.total_geral).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
 
                 // Preencher Metas
                 if (data.metas.length > 0) {
@@ -447,17 +458,18 @@ if (isset($_POST['ativar-funcionario'])) {
                         <td>${new Date(venda.data_venda).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</td>
                         <td>${venda.nome_produto}</td>
                          <td>${venda.qtd_vendido}</td>
+                         <td>R$ ${parseFloat(venda.valor_venda).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                     </tr>`;
                         tbodyVendas.innerHTML += row;
                     });
                 } else {
-                    tbodyVendas.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Nenhuma venda recente.</td></tr>';
+                    tbodyVendas.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhuma venda recente.</td></tr>';
                 }
             })
             .catch(error => {
                 console.error('Erro:', error);
                 tbodyMetas.innerHTML = '<tr><td colspan="2" class="text-center text-danger">Erro ao carregar.</td></tr>';
-                tbodyVendas.innerHTML = '<tr><td colspan="3" class="text-center text-danger">Erro ao carregar.</td></tr>';
+                tbodyVendas.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Erro ao carregar.</td></tr>';
             });
 
     }

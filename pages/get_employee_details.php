@@ -15,8 +15,8 @@ if (isset($_POST['id'])) {
         $metas[] = $reg;
     }
 
-   
-    $q_vendas = "SELECT v.data_venda, p.nome_produto, vp.qtd_vendido 
+
+    $q_vendas = "SELECT v.data_venda, p.nome_produto, vp.qtd_vendido, (vp.qtd_vendido * p.vlr_unitario) as valor_venda
                  FROM tabela_vendas v
                  INNER JOIN tabela_vendas_produtos vp ON v.id = vp.id_venda
                  INNER JOIN tabela_produtos p ON vp.id_produto = p.id
@@ -28,5 +28,14 @@ if (isset($_POST['id'])) {
         $vendas[] = $reg;
     }
 
-    echo json_encode(['metas' => $metas, 'vendas' => $vendas]);
+    // Calcular total geral de vendas do funcionário
+    $q_total = "SELECT SUM(vp.qtd_vendido * p.vlr_unitario) as total_geral
+                FROM tabela_vendas v
+                INNER JOIN tabela_vendas_produtos vp ON v.id = vp.id_venda
+                INNER JOIN tabela_produtos p ON vp.id_produto = p.id
+                WHERE v.funcionario_vendas = '$id_func'";
+    $busca_total = $banco->query($q_total);
+    $total_geral = $busca_total->fetch_object()->total_geral ?? 0;
+
+    echo json_encode(['metas' => $metas, 'vendas' => $vendas, 'total_geral' => $total_geral]);
 }
